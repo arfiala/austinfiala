@@ -5,7 +5,7 @@ slug: 20260715-132649_build-austinfiala-site
 effort: E3
 effort_source: classifier
 phase: complete
-progress: 33/34
+progress: 37/38
 mode: interactive
 started: 2026-07-15T13:26:49-04:00
 updated: 2026-07-15T13:26:49-04:00
@@ -63,6 +63,10 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-24: `curl -i https://austinfiala.com` → 200 with valid cert (CN/SAN austinfiala.com)
 - [x] ISC-25: `curl -i http://austinfiala.com` → redirects to https
 - [x] ISC-26: Interceptor desktop screenshot shows all six sections rendered per design
+- [x] ISC-35: "AI Policy & Training" card removed — 0 hits in built and live-served HTML (2026-07-15 follow-up task)
+- [x] ISC-36: "Personal AI Infrastructure" card still renders (1 hit live)
+- [x] ISC-37: Anti: suretas still 0 hits live; suretas.com/health 200 post-deploy; index.html md5 byte-match local↔prod (b6d2d004…)
+- [x] ISC-38: Removal committed to repo
 - [DEFERRED-VERIFY] ISC-27: Interceptor 375px-width screenshot clean; console shows zero errors — this Interceptor build has no viewport emulation (manifest grep empty; window resize doesn't reflow the DOM render). Follow-up: FOLLOWUP-austinfiala-mobile-check — Austin loads the site on his phone, or devtools emulation next session. Structural evidence already strong: viewport meta present, all CSS widths are max-width (840px column, 480px collapse query), zero scripts + all resources render (no console-error source).
 - [x] ISC-28: Every footer/hero link resolves (mailto/GitHub/LinkedIn URLs well-formed)
 - [x] ISC-29: Anti: `grep -ri suretas public/` and deployed bytes → zero hits
@@ -111,6 +115,7 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - 2026-07-15T13:55 — refined: ISC-16 "1 accent color" means one accent hue; Constraints permit tints derived from the palette. Emerald #2BB673 stays decorative/large-text; links use derived #1E7A50 because emerald fails WCAG AA at body size (contrast ~2.46 vs ~5.0). Engineer's substitution follows the brief's explicit AA instruction.
 - 2026-07-15T13:55 — DNS incident, local-only: my pre-record dig seeded a negative cache upstream; authoritative + world resolve fine (www worked immediately). Live-probed apex via --resolve (200, valid LE cert). Interceptor pass waits on cache expiry via bounded background poll; /etc/hosts workaround unavailable (no passwordless sudo).
 - 2026-07-15T13:55 — Family/newborn deliberately excluded from public page copy (privacy default); Austin can add. Personal line covers swimming/biking/golf/brewing only.
+- 2026-07-15T14:20 — Austin: remove the AI Policy project card. Classifier said E2; ISC floor under-decomposed (4 new ISCs, not 16) — a one-entry content deletion + redeploy doesn't decompose further without inventing probes. Projects grid now 1 card (honest beats padded; more cards when Austin supplies them).
 
 ## Changelog
 
