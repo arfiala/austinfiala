@@ -45,7 +45,7 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-6: Content lives as editable files (now.md / projects / site config) separate from build code
 - [x] ISC-7: Hero renders name, one-line identity, location, email + GitHub links
 - [x] ISC-8: Now section renders with "Updated July 2026" date stamp
-- [x] ISC-9: Projects grid renders ≥2 entries, each with name, description, status, stack tags
+- [x] ISC-9: Projects grid renders ≥1 entry, each with name, description, status, stack tags [refined 2026-07-15: was ≥2 at launch; AI Policy card removed on Austin's instruction — see Decisions]
 - [x] ISC-10: Services section renders advisory offer + mailto CTA
 - [x] ISC-11: About section renders bio with one personal/human line
 - [x] ISC-12: Footer renders email, GitHub, LinkedIn (`linkedin.com/in/austin-fiala`)
