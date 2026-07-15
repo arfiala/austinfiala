@@ -1,0 +1,3 @@
+# austinfiala
+
+Static single-page personal site for Austin Fiala. Copy and config live in `content/` (typed `.ts` + `.md`); `bun src/build.ts` reads them, escapes all content, and emits `public/index.html` + `public/styles.css` (no JavaScript ships to the page). Fonts (Space Grotesk / Inter) are self-hosted from `public/fonts/*.woff2`; if those files are absent the build automatically falls back to a `system-ui` font stack with no fonts directory required. The `/notes/<slug>` URL scheme is reserved for a future writing section and is intentionally unused today. Build with `bun src/build.ts` — no npm, no install step, zero runtime dependencies.
