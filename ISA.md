@@ -4,8 +4,8 @@ project: austinfiala.com
 slug: 20260715-132649_build-austinfiala-site
 effort: E3
 effort_source: classifier
-phase: execute
-progress: 32/34
+phase: complete
+progress: 33/34
 mode: interactive
 started: 2026-07-15T13:26:49-04:00
 updated: 2026-07-15T13:26:49-04:00
@@ -62,8 +62,8 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-23: Caddy reloaded (not restarted); service active
 - [x] ISC-24: `curl -i https://austinfiala.com` → 200 with valid cert (CN/SAN austinfiala.com)
 - [x] ISC-25: `curl -i http://austinfiala.com` → redirects to https
-- [ ] ISC-26: Interceptor desktop screenshot shows all six sections rendered per design
-- [ ] ISC-27: Interceptor 375px-width screenshot clean; console shows zero errors
+- [x] ISC-26: Interceptor desktop screenshot shows all six sections rendered per design
+- [DEFERRED-VERIFY] ISC-27: Interceptor 375px-width screenshot clean; console shows zero errors — this Interceptor build has no viewport emulation (manifest grep empty; window resize doesn't reflow the DOM render). Follow-up: FOLLOWUP-austinfiala-mobile-check — Austin loads the site on his phone, or devtools emulation next session. Structural evidence already strong: viewport meta present, all CSS widths are max-width (840px column, 480px collapse query), zero scripts + all resources render (no console-error source).
 - [x] ISC-28: Every footer/hero link resolves (mailto/GitHub/LinkedIn URLs well-formed)
 - [x] ISC-29: Anti: `grep -ri suretas public/` and deployed bytes → zero hits
 - [x] ISC-30: Anti: `https://suretas.com/health` returns 200 after the Caddy reload
@@ -112,6 +112,35 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - 2026-07-15T13:55 — DNS incident, local-only: my pre-record dig seeded a negative cache upstream; authoritative + world resolve fine (www worked immediately). Live-probed apex via --resolve (200, valid LE cert). Interceptor pass waits on cache expiry via bounded background poll; /etc/hosts workaround unavailable (no passwordless sudo).
 - 2026-07-15T13:55 — Family/newborn deliberately excluded from public page copy (privacy default); Austin can add. Personal line covers swimming/biking/golf/brewing only.
 
+## Changelog
+
+- 2026-07-15 — conjectured: Interceptor alone can complete full browser verification including the mobile breakpoint. refuted_by: manifest grep shows no viewport/device emulation; `window resize` does not reflow the DOM-render screenshot. learned: mobile-layout verification on this machine needs a real device or devtools emulation; structural CSS evidence (max-width-only layout + collapse query + viewport meta) is the honest substitute, not a screenshot. criterion_now: ISC-27 is [DEFERRED-VERIFY] with FOLLOWUP-austinfiala-mobile-check (Austin's phone).
+
 ## Verification
 
-(populated at VERIFY)
+- ISC-1: Bash — dir listed then deleted; `grep -c` over WORK/ → 0 matches remain
+- ISC-2/3: aws route53 — change C06940152B76DJO6O5XTD INSYNC; authoritative dig → 44.200.119.114 (both records)
+- ISC-4: git — commits b10941b, 98520ca
+- ISC-5/6: Bash — build exit 0; public/index.html + styles.css emitted; content/ holds 5 editable files apart from src/
+- ISC-7..12: Grep served+built HTML — "Austin Fiala"(3), "New Jersey, USA", mailto(3), github.com/arfiala(2), "Updated July 2026", 2 project cards w/ status+tags, "Work with me"+CTA, About para, footer Email/GitHub/LinkedIn
+- ISC-13: Grep — 0 hits for writing/notes in HTML; README documents reserved /notes/<slug> scheme
+- ISC-14: Grep styles.css — all four hex values present
+- ISC-15: ls — 6 woff2 in public/fonts; 6 @font-face blocks; families = Inter, Space Grotesk only
+- ISC-16: Grep — 2 typeface families; accent = green hue (emerald #2BB673 decorative + derived #1E7A50 AA links per Decisions refinement)
+- ISC-17: Grep — 0 `<img>` tags, 0 raster references
+- ISC-18: Grep — viewport meta present; all CSS widths are max-width (840 column, 480 collapse query, 8px decorative) — overflow structurally impossible
+- ISC-19: Engineer computed contrast: emerald-on-offwhite 2.46 (demoted to decorative), #1E7A50 links ~5.0, ink-on-offwhite and offwhite-on-evergreen pass
+- ISC-20: md5sum — 076df64364fd5979973f0edf2a4f5388 identical local and /opt/austinfiala/public/
+- ISC-21: ssh — /etc/caddy/Caddyfile.bak-20260715T174814 created before edit
+- ISC-22/23: ssh — new site blocks in Caddyfile; `caddy validate` Valid; systemctl reload; is-active → active
+- ISC-24: curl — HTTP/2 200; openssl: CN=austinfiala.com, issuer Let's Encrypt, notAfter Oct 13 2026
+- ISC-25: curl — http:// → 308 Location: https://austinfiala.com/; https://www → 301 → apex
+- ISC-26: Interceptor — a11y tree shows banner/main(4 regions)/contentinfo; full-page + pixel-true screenshots visually confirm all six sections, grid motif, fonts
+- ISC-27: DEFERRED-VERIFY — see Changelog; FOLLOWUP-austinfiala-mobile-check
+- ISC-28: interceptor tree — e1..e6 hrefs all well-formed (mailto/GitHub/LinkedIn)
+- ISC-29: curl+grep — live served bytes: 0 suretas hits (checked via --resolve AND public DNS)
+- ISC-30: curl — suretas.com/health 200 at 14:00:17 post-reload; app page 200
+- ISC-31: copy pinned verbatim; placeholder/lorem/testimonial scan on live bytes → 0 hits
+- ISC-32: ls — no package.json/node_modules; build is `bun src/build.ts`; zero `<script>` tags
+- ISC-33: copy authored fresh from identity facts; no PAI file content in repo or served bytes
+- ISC-34: all copy traceable to PRINCIPAL_IDENTITY/RESUME facts; family deliberately excluded (Decisions); flagged for Austin's edit
