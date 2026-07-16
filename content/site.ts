@@ -26,5 +26,6 @@ export const site: SiteConfig = {
     { label: "Email", href: "mailto:arfiala@gmail.com" },
     { label: "GitHub", href: "https://github.com/arfiala" },
     { label: "LinkedIn", href: "https://www.linkedin.com/in/austin-fiala/" },
+    { label: "Fitness", href: "https://fit.austinfiala.com" },
   ],
 };
