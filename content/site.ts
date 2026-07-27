@@ -27,5 +27,6 @@ export const site: SiteConfig = {
     { label: "GitHub", href: "https://github.com/arfiala" },
     { label: "LinkedIn", href: "https://www.linkedin.com/in/austin-fiala/" },
     { label: "Fitness", href: "https://fit.austinfiala.com" },
+    { label: "Daybook", href: "https://day.austinfiala.com" },
   ],
 };
