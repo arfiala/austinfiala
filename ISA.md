@@ -5,7 +5,7 @@ slug: 20260730-104436_austinfiala-blog
 effort: E3
 effort_source: classifier
 phase: complete
-progress: 38/38
+progress: 59/59
 mode: interactive
 iteration: 2
 started: 2026-07-30T10:44:36-04:00
@@ -123,24 +123,27 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 
 ### Blueprint restyle (2026-07-30, Austin picked concept C; ISC-77..94)
 
-- [ ] ISC-77: blog pages emit body class bp; homepage emits no body tag change
-- [ ] ISC-78: blog index shows the four-cell title block (PROJECT, SHEET, DRAWN BY, REV from latest post date)
-- [ ] ISC-79: index h1 is The Drafting Table with the mono working-notes subline
-- [ ] ISC-80: each post renders as a paper print card with four gold corner ticks
-- [ ] ISC-81: cards carry NOTE numbers assigned date-ascending (oldest = 001) so numbers never shift
-- [ ] ISC-82: cards carry the PUBLIC COPY stamp and a dashed printhead rule
-- [ ] ISC-83: specline shows DATE and READ minutes (word count over 200, floor 1)
-- [ ] ISC-84: gold doodle arrow with pin-up line renders on the index only
-- [ ] ISC-85: post page carries title block, NOTE number, stamp, full body inside the print, specline, crumbs
-- [ ] ISC-86: post body typography restyled for paper (evergreen headings, tinted code) with no rendering regression
-- [ ] ISC-87: palette limited to existing vars plus brand gold #C9973F (Portal keystone gold, recorded as refinement)
-- [ ] ISC-88: grid ground via CSS gradients only, no images
-- [ ] ISC-89: 480px query keeps cards and title block stacking cleanly (structural CSS check)
-- [ ] ISC-90: Anti: homepage byte-identical to pre-restyle build (md5 compare)
-- [ ] ISC-91: Anti: feed.xml byte-identical (visual-only change)
-- [ ] ISC-92: Anti: zero script tags, zero suretas, zero em/en dashes in built blog output (guards still pass)
-- [ ] ISC-93: Interceptor screenshots: restyled index and post page render per concept
-- [ ] ISC-94: committed; deploy staged but NOT executed (gated on Austin's word)
+- [x] ISC-77: blog pages emit body class bp; homepage emits no body tag change
+- [x] ISC-78: blog index shows the four-cell title block (PROJECT, SHEET, DRAWN BY, REV from latest post date)
+- [x] ISC-79: index h1 is The Drafting Table with the mono working-notes subline
+- [x] ISC-80: each post renders as a paper print card with four gold corner ticks
+- [x] ISC-81: cards carry NOTE numbers assigned date-ascending (oldest = 001), slug tiebreak; stable for append-only publishing, backdating renumbers by design [refined per advisor]
+- [x] ISC-82: cards carry the PUBLIC COPY stamp and a dashed printhead rule
+- [x] ISC-83: specline shows DATE and READ minutes (word count over 200, floor 1)
+- [x] ISC-84: gold doodle arrow with pin-up line renders on the index only
+- [x] ISC-85: post page carries title block, NOTE number, stamp, full body inside the print, specline, crumbs
+- [x] ISC-86: post body typography restyled for paper (evergreen headings, tinted code) with no rendering regression
+- [x] ISC-87: palette limited to existing vars plus brand gold #C9973F and derived #8F6722 gold-ink for small text on paper (AA measured 4.77)
+- [x] ISC-88: grid ground via CSS gradients only, no images
+- [x] ISC-89: 480px query keeps cards and title block stacking cleanly (structural CSS check)
+- [x] ISC-90: Anti: homepage byte-identical to pre-restyle build (md5 compare)
+- [x] ISC-91: Anti: feed.xml byte-identical (visual-only change; feed keeps the Austin Fiala Blog name deliberately)
+- [x] ISC-92: Anti: zero script tags, zero suretas, zero em/en dashes in built blog output (guards still pass)
+- [x] ISC-93: Interceptor screenshots: restyled index and post page render per concept
+- [x] ISC-94: committed 0ba7c39; deploy staged but NOT executed (gated on Austin's word)
+- [x] ISC-95: whole-tree build determinism proven: identical tree md5 across two builds plus a TZ/LC_ALL variant [added per advisor]
+- [x] ISC-96: blog stylesheet links carry a CSS content-hash version param (stale-cache lesson); homepage link untouched [added per advisor]
+- [x] ISC-97: positive structure guard in build dies if the index loses The Drafting Table, the title block, or NOTE numbering [added per advisor]
 
 ## Test Strategy
 
