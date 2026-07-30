@@ -2,7 +2,7 @@
 // Usage: bun src/build.ts  ->  emits public/index.html + public/styles.css
 // Exits non-zero if any content file is missing.
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -179,6 +179,245 @@ ${serviceItems}
     </nav>
   </div>
 </footer>
+`;
+
+// --- Blog ---
+// Posts are markdown files in content/blog/, filename is the slug.
+// Front matter block (--- title / date ---) is required; build dies without it.
+
+interface BlogPost {
+  slug: string;
+  title: string;
+  dateIso: string;
+  dateHuman: string;
+  bodyHtml: string;
+  summary: string;
+}
+
+const BLOG = join(CONTENT, "blog");
+const SITE_URL = "https://austinfiala.com";
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
+function humanDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return `${MONTHS[m - 1]} ${d}, ${y}`;
+}
+
+function rfc822(iso: string): string {
+  const dt = new Date(`${iso}T00:00:00Z`);
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const mons = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${days[dt.getUTCDay()]}, ${String(dt.getUTCDate()).padStart(2, "0")} ` +
+    `${mons[dt.getUTCMonth()]} ${dt.getUTCFullYear()} 00:00:00 GMT`;
+}
+
+// Only these href shapes are allowed in post links; anything else stays literal text.
+function safeHref(url: string): string | null {
+  return /^(https?:\/\/|mailto:|\/|#)/.test(url) ? url : null;
+}
+
+// Inline markdown applied to ALREADY-ESCAPED text: code spans, links, bold, italic.
+// Code spans are lifted out first so their contents skip the other transforms.
+function inlineMd(escaped: string): string {
+  const codeSpans: string[] = [];
+  let out = escaped.replace(/`([^`]+)`/g, (_m, code: string) => {
+    codeSpans.push(`<code>${code}</code>`);
+    return `@@CODESPAN${codeSpans.length - 1}@@`;
+  });
+  out = out.replace(/\[([^\]]+)\]\(([^()\s]+)\)/g, (m: string, text: string, url: string) => {
+    const href = safeHref(url);
+    return href ? `<a href="${href}">${text}</a>` : m;
+  });
+  out = out.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  out = out.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+  return out.replace(/@@CODESPAN(\d+)@@/g, (_m, i: string) => codeSpans[Number(i)]);
+}
+
+// Purpose-built block renderer: paragraphs, ##/### headings, bullet lists,
+// fenced code blocks. Escape-first everywhere; unknown constructs render as text.
+function renderMarkdown(md: string): string {
+  const lines = md.split("\n");
+  const out: string[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.trim() === "") { i++; continue; }
+    if (line.startsWith("```")) {
+      const code: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith("```")) { code.push(lines[i]); i++; }
+      i++;
+      out.push(`<pre><code>${esc(code.join("\n"))}</code></pre>`);
+      continue;
+    }
+    if (line.startsWith("### ")) { out.push(`<h3>${inlineMd(esc(line.slice(4).trim()))}</h3>`); i++; continue; }
+    if (line.startsWith("## ")) { out.push(`<h2>${inlineMd(esc(line.slice(3).trim()))}</h2>`); i++; continue; }
+    if (line.startsWith("- ")) {
+      const items: string[] = [];
+      while (i < lines.length && lines[i].startsWith("- ")) {
+        items.push(`  <li>${inlineMd(esc(lines[i].slice(2).trim()))}</li>`);
+        i++;
+      }
+      out.push(`<ul>\n${items.join("\n")}\n</ul>`);
+      continue;
+    }
+    const para: string[] = [];
+    while (
+      i < lines.length && lines[i].trim() !== "" &&
+      !lines[i].startsWith("- ") && !lines[i].startsWith("## ") &&
+      !lines[i].startsWith("### ") && !lines[i].startsWith("```")
+    ) {
+      para.push(lines[i].trim());
+      i++;
+    }
+    out.push(`<p>${inlineMd(esc(para.join(" ")))}</p>`);
+  }
+  return out.join("\n");
+}
+
+function parsePost(filename: string): BlogPost {
+  const slug = filename.replace(/\.md$/, "");
+  if (!/^[a-z0-9-]+$/.test(slug)) {
+    die(`blog: bad slug "${slug}" (filenames must be lowercase a-z, 0-9, hyphens)`);
+  }
+  const raw = readFileSync(join(BLOG, filename), "utf8").trim();
+  const m = raw.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/);
+  if (!m) die(`blog: ${filename} missing front matter (--- title/date block)`);
+  const fm: Record<string, string> = {};
+  for (const l of m[1].split("\n")) {
+    const idx = l.indexOf(":");
+    if (idx > 0) fm[l.slice(0, idx).trim()] = l.slice(idx + 1).trim();
+  }
+  if (!fm.title) die(`blog: ${filename} front matter missing title`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fm.date ?? "")) die(`blog: ${filename} date must be YYYY-MM-DD`);
+  const body = m[2].trim();
+  if (!body) die(`blog: ${filename} has no body`);
+  const firstPara = body.split("\n\n")[0].replace(/\n/g, " ").trim();
+  const summary = firstPara.replace(/\]\([^)]*\)/g, "]").replace(/[#*`\[\]]/g, "").trim();
+  return {
+    slug,
+    title: fm.title,
+    dateIso: fm.date,
+    dateHuman: humanDate(fm.date),
+    bodyHtml: renderMarkdown(body),
+    summary,
+  };
+}
+
+if (!existsSync(BLOG)) die("blog: content/blog/ is missing");
+const posts: BlogPost[] = readdirSync(BLOG)
+  .filter((f) => f.endsWith(".md"))
+  .map(parsePost)
+  .sort((a, b) => (a.dateIso < b.dateIso ? 1 : -1));
+if (posts.length === 0) die("blog: content/blog/ has no posts (the blog never ships empty)");
+
+const blogDescription = "Notes on cybersecurity, risk, and building simple systems.";
+
+function pageShell(title: string, description: string, body: string): string {
+  return `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(description)}">
+<link rel="icon" href="${faviconHref}">
+<link rel="alternate" type="application/rss+xml" title="Austin Fiala Blog" href="/blog/feed.xml">
+<link rel="stylesheet" href="/styles.css">
+
+${body}
+`;
+}
+
+const blogHeader = `<header class="subhero">
+  <div class="wrap subhero-inner">
+    <a class="crumb" href="/">Austin Fiala</a>
+    <span class="crumb-sep">/</span>
+    <a class="crumb" href="/blog/">Blog</a>
+  </div>
+</header>`;
+
+const blogFooter = `<footer class="footer">
+  <div class="wrap footer-inner">
+    <p class="copyright">© 2026 Austin Fiala</p>
+    <nav class="footer-links" aria-label="Footer">
+        ${footerLinks}
+    </nav>
+  </div>
+</footer>`;
+
+const postItems = posts
+  .map(
+    (p) => `      <li>
+        <span class="post-date">${esc(p.dateHuman)}</span>
+        <a class="post-link" href="/blog/${p.slug}/">${esc(p.title)}</a>
+      </li>`,
+  )
+  .join("\n");
+
+const blogIndexHtml = pageShell(
+  "Blog | Austin Fiala",
+  blogDescription,
+  `${blogHeader}
+
+<main class="wrap">
+  <section class="section" aria-labelledby="blog-h">
+    <h1 class="section-title" id="blog-h">Blog</h1>
+    <p class="lede">${esc(blogDescription)}</p>
+    <ul class="post-list">
+${postItems}
+    </ul>
+    <p class="feed-note"><a href="/blog/feed.xml">RSS feed</a></p>
+  </section>
+</main>
+
+${blogFooter}`,
+);
+
+function postPage(p: BlogPost): string {
+  return pageShell(
+    `${p.title} | Austin Fiala`,
+    p.summary,
+    `${blogHeader}
+
+<main class="wrap">
+  <article class="section post">
+    <p class="stamp">${esc(p.dateHuman)}</p>
+    <h1 class="post-title">${esc(p.title)}</h1>
+${p.bodyHtml}
+    <p class="crumbs"><a href="/blog/">All posts</a> · <a href="/">Home</a></p>
+  </article>
+</main>
+
+${blogFooter}`,
+  );
+}
+
+const feedItems = posts
+  .map(
+    (p) => `    <item>
+      <title>${esc(p.title)}</title>
+      <link>${SITE_URL}/blog/${p.slug}/</link>
+      <guid>${SITE_URL}/blog/${p.slug}/</guid>
+      <pubDate>${rfc822(p.dateIso)}</pubDate>
+      <description>${esc(p.summary)}</description>
+    </item>`,
+  )
+  .join("\n");
+
+const feedXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Austin Fiala Blog</title>
+    <link>${SITE_URL}/blog/</link>
+    <atom:link href="${SITE_URL}/blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>${esc(blogDescription)}</description>
+    <language>en-us</language>
+    <lastBuildDate>${rfc822(posts[0].dateIso)}</lastBuildDate>
+${feedItems}
+  </channel>
+</rss>
 `;
 
 // --- CSS ---
@@ -433,14 +672,59 @@ a{color:var(--link);}
   .card-head{flex-wrap:wrap;}
   .footer-inner{flex-direction:column;align-items:flex-start;}
 }
+
+/* --- Blog --- */
+.subhero{background:var(--evergreen);}
+.subhero-inner{padding:28px 24px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.crumb{color:var(--offwhite);font-family:var(--font-head);font-weight:500;text-decoration:none;}
+.crumb:hover,.crumb:focus{color:var(--emerald);}
+.crumb-sep{color:var(--emerald);}
+.post-list{list-style:none;margin:0;padding:0;}
+.post-list li{display:flex;align-items:baseline;gap:16px;padding:12px 0;border-bottom:1px solid rgba(20,25,23,0.08);}
+.post-list li:last-child{border-bottom:0;}
+.post-date{flex:none;font-family:var(--font-head);font-weight:500;font-size:0.85rem;letter-spacing:0.04em;text-transform:uppercase;color:var(--link);min-width:9.5em;}
+.post-link{font-family:var(--font-head);font-weight:500;font-size:1.05rem;}
+.post-title{font-size:clamp(1.8rem,5vw,2.4rem);font-weight:700;margin:0 0 24px;}
+.post h2{font-size:1.35rem;margin:32px 0 12px;}
+.post h3{font-size:1.1rem;margin:24px 0 8px;}
+.post p{margin:0 0 16px;max-width:44em;}
+.post ul{margin:0 0 16px;padding-left:24px;}
+.post li{margin:4px 0;}
+.post pre{background:var(--tint);border:1px solid rgba(43,182,115,0.35);border-radius:8px;padding:16px;overflow-x:auto;font-size:0.85rem;line-height:1.5;}
+.post code{font-family:ui-monospace,monospace;}
+.post p code,.post li code{background:var(--tint);border:1px solid rgba(43,182,115,0.35);border-radius:4px;padding:1px 5px;font-size:0.85em;}
+.crumbs{margin:32px 0 0;font-family:var(--font-head);}
+.feed-note{margin:24px 0 0;font-size:0.9rem;}
+@media (max-width:480px){
+  .post-list li{flex-direction:column;gap:2px;}
+}
 `;
 
 // --- Emit ---
-if (!existsSync(PUBLIC)) mkdirSync(PUBLIC, { recursive: true });
-writeFileSync(join(PUBLIC, "index.html"), html, "utf8");
-writeFileSync(join(PUBLIC, "styles.css"), css, "utf8");
+// R-02 guard runs at emit time: Suretas stays off this site until the
+// employment-legal check clears. Delete the guard the day R-02 closes.
+const emitted: [string, string][] = [
+  ["index.html", html],
+  ["styles.css", css],
+  ["blog/index.html", blogIndexHtml],
+  ["blog/feed.xml", feedXml],
+  ...posts.map((p): [string, string] => [`blog/${p.slug}/index.html`, postPage(p)]),
+];
+
+for (const [rel, content] of emitted) {
+  if (/suretas/i.test(content)) {
+    die(`R-02 guard: "suretas" found in ${rel}; Suretas stays off this site until R-02 clears`);
+  }
+  // Dash rule: no em or en dashes in blog output (legacy homepage copy exempt).
+  if (rel.startsWith("blog/") && /[–—]/.test(content)) {
+    die(`dash guard: em/en dash found in ${rel}; use a period, comma, colon, or plain word`);
+  }
+  const abs = join(PUBLIC, rel);
+  mkdirSync(dirname(abs), { recursive: true });
+  writeFileSync(abs, content, "utf8");
+}
 
 console.log(
-  `build: wrote public/index.html + public/styles.css ` +
+  `build: wrote index.html, styles.css, blog/ (${posts.length} post${posts.length === 1 ? "" : "s"} + feed.xml) ` +
     `(fonts: ${fontsSelfHosted ? "self-hosted" : "system fallback"})`,
 );

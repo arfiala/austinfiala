@@ -19,10 +19,12 @@ export const site: SiteConfig = {
     "Cybersecurity consultant for financial firms — risk assessments, vCISO advisory, and AI governance for RIAs, funds, and community financial institutions.",
   location: "New Jersey, USA",
   links: [
+    { label: "Blog", href: "/blog/" },
     { label: "Email", href: "mailto:arfiala@gmail.com" },
     { label: "GitHub", href: "https://github.com/arfiala" },
   ],
   footerLinks: [
+    { label: "Blog", href: "/blog/" },
     { label: "Email", href: "mailto:arfiala@gmail.com" },
     { label: "GitHub", href: "https://github.com/arfiala" },
     { label: "LinkedIn", href: "https://www.linkedin.com/in/austin-fiala/" },
