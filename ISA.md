@@ -5,7 +5,7 @@ slug: 20260730-104436_austinfiala-blog
 effort: E3
 effort_source: classifier
 phase: complete
-progress: 31/31
+progress: 38/38
 mode: interactive
 iteration: 2
 started: 2026-07-30T10:44:36-04:00
@@ -110,6 +110,16 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-67: Interceptor screenshot: homepage hero shows the Blog link
 - [x] ISC-68: blog feature committed to the repo (git log shows the commit)
 - [x] ISC-69: build dies non-zero with an R-02 message if any content file mentions suretas (ingestion-point guard; synthetic probe)
+
+### Blog deploy (2026-07-30, ISC-70..76)
+
+- [x] ISC-70: rsync completes; live /blog/index.html md5 byte-matches local build
+- [x] ISC-71: https://austinfiala.com/blog/ returns 200 over public HTTPS
+- [x] ISC-72: post page and feed.xml return 200; feed served with an XML content type; /blog no-slash 308s to /blog/
+- [x] ISC-73: live homepage bytes contain the hero Blog link
+- [x] ISC-74: Anti: live pages 0 suretas hits; suretas.com/health, fit., day. all 200 post-deploy
+- [x] ISC-75: Interceptor screenshot of the live https://austinfiala.com/blog/ render
+- [x] ISC-76: deploy/NOTES.md bootstrapped with method, target, smoke set, log; committed
 
 ## Test Strategy
 
@@ -232,3 +242,10 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - ISC-67: Interceptor — screenshot 1785423148258: hero shows Blog | Email | GitHub; footer leads with Blog; rest of homepage unchanged
 - ISC-68: git — commit f0d2fa3 "Add blog: markdown posts, escape-first renderer, RSS, R-02 and dash guards"
 - ISC-69: Bash — suretas post probe: exit 1 "R-02 guard: suretas found in blog/feed.xml"; guard is case-insensitive and output-side; 0 suretas bytes written
+- ISC-70: rsync 7 files sent; curl live blog/index.html md5 7e0462d3022ded4f65b3ba1a5d0cb1ee = local
+- ISC-71/72: curl — 200 on /, /blog/, post, feed.xml; content-type text/xml; /blog → 308 → /blog/
+- ISC-73: curl live / — 1 hit hero-link href="/blog/"
+- ISC-74: curl — 0 suretas across four live pages; suretas:200 fit:200 day:200
+- ISC-75: Interceptor — screenshot 1785423579731: live blog index over HTTPS, breadcrumb, dated post, RSS link
+- ISC-76: deploy/NOTES.md written (method/target/secrets/smoke/gotchas/log)
+- Deploy advisor pass: whole-tree parity proven (`rsync -avin --checksum` dry-run: zero pending transfers, exit 0); http 308 and www 301 both land on /blog/; leak-class rg over public/ 0 hits; deployed SHA pinned in NOTES.md; no --delete deliberate (additive feature, house rule). Known-open, recorded not blocking: no Cache-Control header on statics (Caddy default, zero-JS site so low risk), no robots.txt/sitemap/custom 404 (site never had them), feed served text/xml rather than application/rss+xml (readers accept both). Neighbor health is "unchanged by construction" (no restart, disjoint path), not a differential test.
