@@ -192,6 +192,7 @@ interface BlogPost {
   dateHuman: string;
   bodyHtml: string;
   summary: string;
+  readMin: number;
 }
 
 const BLOG = join(CONTENT, "blog");
@@ -298,6 +299,7 @@ function parsePost(filename: string): BlogPost {
   if (!body) die(`blog: ${filename} has no body`);
   const firstPara = body.split("\n\n")[0].replace(/\n/g, " ").trim();
   const summary = firstPara.replace(/\]\([^)]*\)/g, "]").replace(/[#*`\[\]]/g, "").trim();
+  const words = body.split(/\s+/).filter(Boolean).length;
   return {
     slug,
     title: fm.title,
@@ -305,14 +307,18 @@ function parsePost(filename: string): BlogPost {
     dateHuman: humanDate(fm.date),
     bodyHtml: renderMarkdown(body),
     summary,
+    readMin: Math.max(1, Math.round(words / 200)),
   };
 }
 
 if (!existsSync(BLOG)) die("blog: content/blog/ is missing");
+// Sort key is (date, slug) so ordering never depends on filesystem readdir order.
 const posts: BlogPost[] = readdirSync(BLOG)
   .filter((f) => f.endsWith(".md"))
   .map(parsePost)
-  .sort((a, b) => (a.dateIso < b.dateIso ? 1 : -1));
+  .sort((a, b) =>
+    a.dateIso !== b.dateIso ? (a.dateIso < b.dateIso ? 1 : -1) : a.slug < b.slug ? -1 : 1,
+  );
 if (posts.length === 0) die("blog: content/blog/ has no posts (the blog never ships empty)");
 
 const blogDescription = "Notes on cybersecurity, risk, and building simple systems.";
@@ -326,17 +332,36 @@ function pageShell(title: string, description: string, body: string): string {
 <link rel="alternate" type="application/rss+xml" title="Austin Fiala Blog" href="/blog/feed.xml">
 <link rel="stylesheet" href="/styles.css">
 
+<body class="bp">
 ${body}
+</body>
 `;
 }
 
-const blogHeader = `<header class="subhero">
-  <div class="wrap subhero-inner">
-    <a class="crumb" href="/">Austin Fiala</a>
-    <span class="crumb-sep">/</span>
-    <a class="crumb" href="/blog/">Blog</a>
+// Sheet revision is the latest post date, so the build stays deterministic.
+const revStamp = posts[0].dateIso.replace(/-/g, ".");
+
+// NOTE numbers assign date-ascending (oldest = 001), tiebroken by slug. Stable
+// for append-only publishing; backdating a post renumbers later notes by design.
+const chrono = [...posts].sort((a, b) =>
+  a.dateIso !== b.dateIso ? (a.dateIso < b.dateIso ? -1 : 1) : a.slug < b.slug ? -1 : 1,
+);
+function noteNo(p: BlogPost): string {
+  return String(chrono.indexOf(p) + 1).padStart(3, "0");
+}
+
+function bpTitleBlock(sheet: string): string {
+  return `<div class="wrap">
+  <div class="bp-titleblock">
+    <div class="bp-cell"><span class="bp-label">Project</span><span class="bp-value"><a class="bp-home" href="/">austinfiala.com</a></span></div>
+    <div class="bp-cell"><span class="bp-label">Sheet</span><span class="bp-value">${esc(sheet)}</span></div>
+    <div class="bp-cell"><span class="bp-label">Drawn by</span><span class="bp-value">A. Fiala</span></div>
+    <div class="bp-cell"><span class="bp-label">Rev</span><span class="bp-value">${esc(revStamp)}</span></div>
   </div>
-</header>`;
+</div>`;
+}
+
+const bpTicks = `<span class="bp-tick tk-tl"></span><span class="bp-tick tk-tr"></span><span class="bp-tick tk-bl"></span><span class="bp-tick tk-br"></span>`;
 
 const blogFooter = `<footer class="footer">
   <div class="wrap footer-inner">
@@ -347,29 +372,41 @@ const blogFooter = `<footer class="footer">
   </div>
 </footer>`;
 
-const postItems = posts
+const postCards = posts
   .map(
-    (p) => `      <li>
-        <span class="post-date">${esc(p.dateHuman)}</span>
-        <a class="post-link" href="/blog/${p.slug}/">${esc(p.title)}</a>
-      </li>`,
+    (p) => `    <article class="bp-print">
+      ${bpTicks}
+      <div class="bp-printhead">
+        <span class="bp-noteno">NOTE ${noteNo(p)}</span>
+        <h2 class="bp-title"><a href="/blog/${p.slug}/">${esc(p.title)}</a></h2>
+        <span class="bp-stamp">Public copy</span>
+      </div>
+      <p>${esc(p.summary)}</p>
+      <div class="bp-specline">
+        <span>DATE: ${esc(p.dateHuman).toUpperCase()}</span>
+        <span>READ: ${p.readMin} MIN</span>
+      </div>
+    </article>`,
   )
   .join("\n");
 
 const blogIndexHtml = pageShell(
   "Blog | Austin Fiala",
   blogDescription,
-  `${blogHeader}
+  `${bpTitleBlock("BLOG / 01")}
 
-<main class="wrap">
-  <section class="section" aria-labelledby="blog-h">
-    <h1 class="section-title" id="blog-h">Blog</h1>
-    <p class="lede">${esc(blogDescription)}</p>
-    <ul class="post-list">
-${postItems}
-    </ul>
-    <p class="feed-note"><a href="/blog/feed.xml">RSS feed</a></p>
-  </section>
+<main class="wrap bp-main">
+  <h1 class="bp-h1">The Drafting Table</h1>
+  <p class="bp-sub">// working notes on security, drawn to scale</p>
+${postCards}
+  <div class="bp-doodle">
+    <svg width="70" height="34" viewBox="0 0 70 34" aria-hidden="true">
+      <path d="M4 28 C 24 30, 40 22, 58 8" fill="none" stroke="#C9973F" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M50 8 l9 -2 -3 9" fill="none" stroke="#C9973F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>new notes pin up here as they are drawn</span>
+  </div>
+  <p class="bp-feednote"><a href="/blog/feed.xml">RSS feed</a></p>
 </main>
 
 ${blogFooter}`,
@@ -379,15 +416,23 @@ function postPage(p: BlogPost): string {
   return pageShell(
     `${p.title} | Austin Fiala`,
     p.summary,
-    `${blogHeader}
+    `${bpTitleBlock(`BLOG / NOTE ${noteNo(p)}`)}
 
-<main class="wrap">
-  <article class="section post">
-    <p class="stamp">${esc(p.dateHuman)}</p>
-    <h1 class="post-title">${esc(p.title)}</h1>
+<main class="wrap bp-main">
+  <article class="bp-print bp-post">
+    ${bpTicks}
+    <div class="bp-printhead">
+      <span class="bp-noteno">NOTE ${noteNo(p)}</span>
+      <h1 class="bp-title">${esc(p.title)}</h1>
+      <span class="bp-stamp">Public copy</span>
+    </div>
 ${p.bodyHtml}
-    <p class="crumbs"><a href="/blog/">All posts</a> · <a href="/">Home</a></p>
+    <div class="bp-specline">
+      <span>DATE: ${esc(p.dateHuman).toUpperCase()}</span>
+      <span>READ: ${p.readMin} MIN</span>
+    </div>
   </article>
+  <p class="bp-crumbs"><a href="/blog/">All notes</a> · <a href="/">Home</a></p>
 </main>
 
 ${blogFooter}`,
@@ -444,6 +489,9 @@ const css = `${fontFace}:root{
   --ink:#141917;
   --link:#1E7A50; /* AA-passing green for body-size link text on off-white */
   --tint:rgba(43,182,115,0.10);
+  --gold:#C9973F; /* Portal keystone gold from the existing brand work */
+  --gold-ink:#8F6722; /* darker gold for small text on paper grounds (AA) */
+  --bp-grid:rgba(43,182,115,0.16);
   --space:8px;
   --font-head:"Space Grotesk",ui-sans-serif,system-ui,sans-serif;
   --font-body:"Inter",ui-sans-serif,system-ui,sans-serif;
@@ -673,42 +721,117 @@ a{color:var(--link);}
   .footer-inner{flex-direction:column;align-items:flex-start;}
 }
 
-/* --- Blog --- */
-.subhero{background:var(--evergreen);}
-.subhero-inner{padding:28px 24px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-.crumb{color:var(--offwhite);font-family:var(--font-head);font-weight:500;text-decoration:none;}
-.crumb:hover,.crumb:focus{color:var(--emerald);}
-.crumb-sep{color:var(--emerald);}
-.post-list{list-style:none;margin:0;padding:0;}
-.post-list li{display:flex;align-items:baseline;gap:16px;padding:12px 0;border-bottom:1px solid rgba(20,25,23,0.08);}
-.post-list li:last-child{border-bottom:0;}
-.post-date{flex:none;font-family:var(--font-head);font-weight:500;font-size:0.85rem;letter-spacing:0.04em;text-transform:uppercase;color:var(--link);min-width:9.5em;}
-.post-link{font-family:var(--font-head);font-weight:500;font-size:1.05rem;}
-.post-title{font-size:clamp(1.8rem,5vw,2.4rem);font-weight:700;margin:0 0 24px;}
-.post h2{font-size:1.35rem;margin:32px 0 12px;}
-.post h3{font-size:1.1rem;margin:24px 0 8px;}
-.post p{margin:0 0 16px;max-width:44em;}
-.post ul{margin:0 0 16px;padding-left:24px;}
-.post li{margin:4px 0;}
-.post pre{background:var(--tint);border:1px solid rgba(43,182,115,0.35);border-radius:8px;padding:16px;overflow-x:auto;font-size:0.85rem;line-height:1.5;}
-.post code{font-family:ui-monospace,monospace;}
-.post p code,.post li code{background:var(--tint);border:1px solid rgba(43,182,115,0.35);border-radius:4px;padding:1px 5px;font-size:0.85em;}
-.crumbs{margin:32px 0 0;font-family:var(--font-head);}
-.feed-note{margin:24px 0 0;font-size:0.9rem;}
+/* --- Blog (Blueprint) --- */
+body.bp{
+  background:
+    repeating-linear-gradient(0deg,var(--bp-grid) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,var(--bp-grid) 0 1px,transparent 1px 44px),
+    var(--evergreen);
+  color:var(--offwhite);
+}
+body.bp .footer{margin-top:56px;border-top:1px solid rgba(43,182,115,0.4);}
+.bp-titleblock{
+  margin:44px 0 0;
+  border:2px solid var(--emerald);
+  display:flex;flex-wrap:wrap;
+  font-family:ui-monospace,monospace;
+}
+.bp-cell{padding:10px 16px;border-right:1px solid rgba(43,182,115,0.5);}
+.bp-cell:last-child{border-right:0;margin-left:auto;}
+.bp-label{display:block;font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);}
+.bp-value{font-weight:700;font-size:0.9rem;color:var(--offwhite);}
+.bp-home{color:var(--offwhite);text-decoration:none;}
+.bp-home:hover,.bp-home:focus{color:var(--emerald);}
+.bp-main{padding-bottom:16px;}
+.bp-h1{color:var(--offwhite);font-size:clamp(1.9rem,5vw,2.6rem);font-weight:700;margin:38px 0 8px;}
+.bp-sub{color:var(--emerald);font-family:ui-monospace,monospace;margin:0 0 6px;}
+.bp-print{
+  position:relative;
+  background:var(--offwhite);
+  color:var(--ink);
+  border-radius:4px;
+  padding:28px 30px 22px;
+  margin:30px 0 0;
+}
+.bp-tick{position:absolute;width:14px;height:14px;border:2px solid var(--gold);}
+.tk-tl{top:-6px;left:-6px;border-right:0;border-bottom:0;}
+.tk-tr{top:-6px;right:-6px;border-left:0;border-bottom:0;}
+.tk-bl{bottom:-6px;left:-6px;border-right:0;border-top:0;}
+.tk-br{bottom:-6px;right:-6px;border-left:0;border-top:0;}
+.bp-printhead{
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  border-bottom:2px dashed rgba(20,25,23,0.25);
+  padding-bottom:12px;margin-bottom:16px;
+}
+.bp-noteno{
+  font-family:ui-monospace,monospace;font-weight:700;font-size:0.78rem;
+  color:var(--offwhite);background:var(--evergreen);border-radius:3px;padding:3px 9px;
+  flex:none;
+}
+.bp-title{margin:0;font-size:1.4rem;font-weight:700;color:var(--evergreen);flex:1;min-width:16ch;}
+.bp-title a{color:inherit;text-decoration:none;}
+.bp-title a:hover,.bp-title a:focus{border-bottom:3px solid var(--gold);}
+.bp-stamp{
+  margin-left:auto;flex:none;
+  font-family:ui-monospace,monospace;font-weight:700;font-size:0.7rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--gold-ink);border:2px solid var(--gold-ink);border-radius:3px;
+  padding:3px 9px;transform:rotate(-2deg);
+}
+.bp-print p{margin:0 0 12px;max-width:58ch;}
+.bp-print h2{font-size:1.3rem;margin:26px 0 10px;color:var(--evergreen);}
+.bp-print h3{font-size:1.05rem;margin:20px 0 8px;color:var(--evergreen);}
+.bp-print ul{margin:0 0 14px;padding-left:24px;}
+.bp-print li{margin:4px 0;}
+.bp-print pre{background:var(--tint);border:1px solid rgba(43,182,115,0.35);border-radius:8px;padding:16px;overflow-x:auto;font-size:0.85rem;line-height:1.5;}
+.bp-print code{font-family:ui-monospace,monospace;}
+.bp-print p code,.bp-print li code{background:var(--tint);border:1px solid rgba(43,182,115,0.35);border-radius:4px;padding:1px 5px;font-size:0.85em;}
+.bp-specline{
+  font-family:ui-monospace,monospace;font-size:0.78rem;color:#4c574f;
+  border-top:2px dashed rgba(20,25,23,0.25);
+  padding-top:12px;margin-top:16px;
+  display:flex;gap:22px;flex-wrap:wrap;
+}
+.bp-doodle{
+  display:flex;align-items:center;gap:10px;
+  color:var(--gold);font-family:ui-monospace,monospace;font-size:0.85rem;
+  margin:22px 0 0;
+}
+.bp-crumbs{margin:22px 0 0;font-family:ui-monospace,monospace;}
+.bp-crumbs a,.bp-feednote a{color:var(--emerald);}
+.bp-feednote{margin:22px 0 0;font-family:ui-monospace,monospace;font-size:0.85rem;}
 @media (max-width:480px){
-  .post-list li{flex-direction:column;gap:2px;}
+  .bp-titleblock{font-size:0.9rem;}
+  .bp-cell{padding:8px 10px;}
+  .bp-cell:last-child{margin-left:0;}
+  .bp-print{padding:20px 18px 16px;}
+  .bp-stamp{margin-left:0;}
 }
 `;
 
 // --- Emit ---
 // R-02 guard runs at emit time: Suretas stays off this site until the
 // employment-legal check clears. Delete the guard the day R-02 closes.
+
+// Cache-bust blog stylesheet links with a content hash so returning readers
+// never run day-old CSS after a redesign (the stale-statics lesson).
+const cssVersion = new Bun.CryptoHasher("sha256").update(css).digest("hex").slice(0, 8);
+function versioned(page: string): string {
+  return page.replace('href="/styles.css"', `href="/styles.css?v=${cssVersion}"`);
+}
+
+// Positive structure guard: negative guards catch bad bytes, this catches the
+// blueprint styling silently disappearing in a refactor.
+if (!blogIndexHtml.includes("The Drafting Table") || !blogIndexHtml.includes("bp-titleblock") || !blogIndexHtml.includes("NOTE 0")) {
+  die("blueprint regression: blog index lost its drafting-table structure");
+}
+
 const emitted: [string, string][] = [
   ["index.html", html],
   ["styles.css", css],
-  ["blog/index.html", blogIndexHtml],
+  ["blog/index.html", versioned(blogIndexHtml)],
   ["blog/feed.xml", feedXml],
-  ...posts.map((p): [string, string] => [`blog/${p.slug}/index.html`, postPage(p)]),
+  ...posts.map((p): [string, string] => [`blog/${p.slug}/index.html`, versioned(postPage(p))]),
 ];
 
 for (const [rel, content] of emitted) {

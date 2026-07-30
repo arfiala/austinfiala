@@ -4,20 +4,26 @@
 <meta name="description" content="This site is a static page built by one TypeScript script. No framework, no packages, no JavaScript shipped to your browser. The build reads a few markdown and config files and writes plain HTML and CSS. That is the whole system.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230B3D2E'/><text x='16' y='21' font-family='sans-serif' font-size='14' font-weight='700' fill='%232BB673' text-anchor='middle'>AF</text></svg>">
 <link rel="alternate" type="application/rss+xml" title="Austin Fiala Blog" href="/blog/feed.xml">
-<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="/styles.css?v=aa59aed9">
 
-<header class="subhero">
-  <div class="wrap subhero-inner">
-    <a class="crumb" href="/">Austin Fiala</a>
-    <span class="crumb-sep">/</span>
-    <a class="crumb" href="/blog/">Blog</a>
+<body class="bp">
+<div class="wrap">
+  <div class="bp-titleblock">
+    <div class="bp-cell"><span class="bp-label">Project</span><span class="bp-value"><a class="bp-home" href="/">austinfiala.com</a></span></div>
+    <div class="bp-cell"><span class="bp-label">Sheet</span><span class="bp-value">BLOG / NOTE 001</span></div>
+    <div class="bp-cell"><span class="bp-label">Drawn by</span><span class="bp-value">A. Fiala</span></div>
+    <div class="bp-cell"><span class="bp-label">Rev</span><span class="bp-value">2026.07.30</span></div>
   </div>
-</header>
+</div>
 
-<main class="wrap">
-  <article class="section post">
-    <p class="stamp">July 30, 2026</p>
-    <h1 class="post-title">Why this site has zero dependencies</h1>
+<main class="wrap bp-main">
+  <article class="bp-print bp-post">
+    <span class="bp-tick tk-tl"></span><span class="bp-tick tk-tr"></span><span class="bp-tick tk-bl"></span><span class="bp-tick tk-br"></span>
+    <div class="bp-printhead">
+      <span class="bp-noteno">NOTE 001</span>
+      <h1 class="bp-title">Why this site has zero dependencies</h1>
+      <span class="bp-stamp">Public copy</span>
+    </div>
 <p>This site is a static page built by one TypeScript script. No framework, no packages, no JavaScript shipped to your browser. The build reads a few markdown and config files and writes plain HTML and CSS. That is the whole system.</p>
 <p>I work in cybersecurity, mostly risk assessments for financial firms. A big part of that job is looking at systems and asking what could go wrong, and the honest answer usually starts with the parts nobody is watching: the dependency nobody remembers adding, the plugin that quietly went unmaintained, the build chain with more moving pieces than the product it ships.</p>
 <p>So when I built my own site I kept the attack surface as close to zero as I could get it:</p>
@@ -30,8 +36,12 @@
 <p>There is a time argument too. I run my practice solo and my spare hours are spoken for. A site I cannot break is a site I never have to fix. Publishing a post here means dropping a markdown file in a folder and running one command:</p>
 <pre><code>bun src/build.ts</code></pre>
 <p>Simple systems fail less, and when they do fail they fail loudly and get fixed fast. That is the same advice I give clients, applied to my own corner of the internet.</p>
-    <p class="crumbs"><a href="/blog/">All posts</a> · <a href="/">Home</a></p>
+    <div class="bp-specline">
+      <span>DATE: JULY 30, 2026</span>
+      <span>READ: 1 MIN</span>
+    </div>
   </article>
+  <p class="bp-crumbs"><a href="/blog/">All notes</a> · <a href="/">Home</a></p>
 </main>
 
 <footer class="footer">
@@ -47,3 +57,4 @@
     </nav>
   </div>
 </footer>
+</body>

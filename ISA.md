@@ -121,6 +121,27 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-75: Interceptor screenshot of the live https://austinfiala.com/blog/ render
 - [x] ISC-76: deploy/NOTES.md bootstrapped with method, target, smoke set, log; committed
 
+### Blueprint restyle (2026-07-30, Austin picked concept C; ISC-77..94)
+
+- [ ] ISC-77: blog pages emit body class bp; homepage emits no body tag change
+- [ ] ISC-78: blog index shows the four-cell title block (PROJECT, SHEET, DRAWN BY, REV from latest post date)
+- [ ] ISC-79: index h1 is The Drafting Table with the mono working-notes subline
+- [ ] ISC-80: each post renders as a paper print card with four gold corner ticks
+- [ ] ISC-81: cards carry NOTE numbers assigned date-ascending (oldest = 001) so numbers never shift
+- [ ] ISC-82: cards carry the PUBLIC COPY stamp and a dashed printhead rule
+- [ ] ISC-83: specline shows DATE and READ minutes (word count over 200, floor 1)
+- [ ] ISC-84: gold doodle arrow with pin-up line renders on the index only
+- [ ] ISC-85: post page carries title block, NOTE number, stamp, full body inside the print, specline, crumbs
+- [ ] ISC-86: post body typography restyled for paper (evergreen headings, tinted code) with no rendering regression
+- [ ] ISC-87: palette limited to existing vars plus brand gold #C9973F (Portal keystone gold, recorded as refinement)
+- [ ] ISC-88: grid ground via CSS gradients only, no images
+- [ ] ISC-89: 480px query keeps cards and title block stacking cleanly (structural CSS check)
+- [ ] ISC-90: Anti: homepage byte-identical to pre-restyle build (md5 compare)
+- [ ] ISC-91: Anti: feed.xml byte-identical (visual-only change)
+- [ ] ISC-92: Anti: zero script tags, zero suretas, zero em/en dashes in built blog output (guards still pass)
+- [ ] ISC-93: Interceptor screenshots: restyled index and post page render per concept
+- [ ] ISC-94: committed; deploy staged but NOT executed (gated on Austin's word)
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
