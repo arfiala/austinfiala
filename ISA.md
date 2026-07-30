@@ -4,8 +4,8 @@ project: austinfiala.com
 slug: 20260730-104436_austinfiala-blog
 effort: E3
 effort_source: classifier
-phase: build
-progress: 0/31
+phase: complete
+progress: 31/31
 mode: interactive
 iteration: 2
 started: 2026-07-30T10:44:36-04:00
@@ -105,10 +105,10 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-62: Anti: zero script tags in any built page (site stays zero-JS)
 - [x] ISC-63: Anti: no invented facts, testimonials, or client references in post copy
 - [x] ISC-64: Antecedent: post copy flagged for Austin's edit before any deploy
-- [ ] ISC-65: Interceptor screenshot: blog index renders correctly on a local server
-- [ ] ISC-66: Interceptor screenshot: post page renders correctly (heading, prose, code styling)
-- [ ] ISC-67: Interceptor screenshot: homepage hero shows the Blog link
-- [ ] ISC-68: blog feature committed to the repo (git log shows the commit)
+- [x] ISC-65: Interceptor screenshot: blog index renders correctly on a local server
+- [x] ISC-66: Interceptor screenshot: post page renders correctly (heading, prose, code styling)
+- [x] ISC-67: Interceptor screenshot: homepage hero shows the Blog link
+- [x] ISC-68: blog feature committed to the repo (git log shows the commit)
 - [x] ISC-69: build dies non-zero with an R-02 message if any content file mentions suretas (ingestion-point guard; synthetic probe)
 
 ## Test Strategy
@@ -167,6 +167,8 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - 2026-07-30T10:44 — Blog task (iteration 2). codex still ABSENT (`which codex`): Forge/Cato unavailable, SOURCE: codex-unavailable. Delegation floor (E3 ≥2) relaxed to 0, show-your-math: the whole feature is one file (src/build.ts, 447 lines, bespoke zero-dep builder) plus content files; an Engineer would need the entire file as context anyway, Engineer agents have stalled mid-build in 6 of the last 8 spawns on this machine, and the 10-minute tier budget is smaller than typical agent spin-up plus reconciliation. Primary builds directly; independent verification still runs (probes + Interceptor + Advisor).
 - 2026-07-30T10:44 — URL scheme: plan reserved /notes/[slug] but Austin said "blog"; /blog/[slug]/ wins (matches user vocabulary, zero live links to /notes/ exist to break). Reservation superseded in Out of Scope.
 - 2026-07-30T10:44 — EnterPlanMode skipped despite Advanced tier: classifier DIRECTIVE says execute now, task is additive and reversible, deploy stays confirm-gated on Austin. Logged as the doctrine deviation it is.
+- 2026-07-30T11:05 — Advisor pass: its top concern (javascript: link schemes) was already closed by the safeHref allowlist and probed; real catches adopted: hostile front-matter title probe (passed after probing), atom:link self reference in the feed, RSS discovery link in page heads, and the dash rule made structural (build dies on em/en dash in blog output, legacy homepage copy exempt). Advisor's auto-state loaded the wrong ISA (ironman slug); this project ISA was the real harness throughout. Follow-ups accepted, not built: probes as a permanent test file, host-side path/content-type verification at deploy. Drafts policy: none, a post in the folder is published.
+- 2026-07-30T11:05 — Deploy deliberately NOT executed: house pattern gates production on Austin's explicit "deploy". Deploy path when he says go: bun src/build.ts, rsync public/ dir-to-dir (trailing slash, no --delete) to /opt/austinfiala/public/, no service restart needed, then curl /blog/ + feed.xml live and confirm content-type.
 
 ## Changelog
 
@@ -200,3 +202,33 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - ISC-32: ls — no package.json/node_modules; build is `bun src/build.ts`; zero `<script>` tags
 - ISC-33: copy authored fresh from identity facts; no PAI file content in repo or served bytes
 - ISC-34: all copy traceable to PRINCIPAL_IDENTITY/RESUME facts; family deliberately excluded (Decisions); flagged for Austin's edit
+
+### Blog (2026-07-30)
+
+- ISC-39: ls — content/blog/why-this-site-has-zero-dependencies.md with title + date front matter
+- ISC-40: Bash — synthetic no-date post: exit 1, "date must be YYYY-MM-DD"
+- ISC-41: Grep fixture render — strong/em/code/link/h2/h3/li/fenced all present exactly once
+- ISC-42: Grep — "&lt;script&gt;" 1, live "<script>" 0 in fixture page; hostile title escaped in title/h1 and feed (&amp;), feed still well-formed
+- ISC-43/44: Bash — build exit 0; blog/index.html + blog/why-this-site-has-zero-dependencies/index.html emitted
+- ISC-45: Grep — post link href + "July 30, 2026" in index
+- ISC-46: Grep — h1 post-title, All posts + Home links present
+- ISC-47: Grep — /styles.css absolute in both pages; 0 hex literals in blog CSS block (vars only)
+- ISC-48: Grep — viewport, icon, description present in index and post page
+- ISC-49/50: Grep — hero-link and footer-link href="/blog/" in built index.html; git diff shows exactly those 2 added lines
+- ISC-51: xmllint --noout clean; 1 item; absolute URLs; rfc822 pubDate; atom:link self ref (advisor add)
+- ISC-52: Grep — "Blog | Austin Fiala" vs "Why this site has zero dependencies | Austin Fiala"
+- ISC-53/63/64: copy authored from PRINCIPAL_IDENTITY facts (consultant, financial firms, solo, time-constrained); zero invented claims; flagged for Austin's edit before deploy
+- ISC-54: Bash — Bad_Slug.md: exit 1 with slug message
+- ISC-55: Grep — stamp "July 30, 2026"; sort key is ISO date string desc
+- ISC-56: awk+grep — 0 hex color literals in the blog CSS section
+- ISC-57: CSS inspection — wrap max-width 840, flex with wrap, pre overflow-x auto, 480px collapse adds column stacking
+- ISC-58: ls — no package.json, no node_modules
+- ISC-59: rg — 0 suretas hits recursive over public/ after final rebuild
+- ISC-60: grep — 0 em/en dashes in blog HTML + feed; now also a build-time guard (probe: dash post exits 1)
+- ISC-61: git diff public/index.html — 2 insertions, both Blog links, nothing else
+- ISC-62: grep — 0 "<script" occurrences across public/
+- ISC-65: Interceptor — screenshot 1785423132049: breadcrumb, Blog h1, lede, dated post link, RSS link, footer
+- ISC-66: Interceptor — screenshot 1785423138859: date stamp, display h1, prose, bullets, styled code block, back links
+- ISC-67: Interceptor — screenshot 1785423148258: hero shows Blog | Email | GitHub; footer leads with Blog; rest of homepage unchanged
+- ISC-68: git — commit f0d2fa3 "Add blog: markdown posts, escape-first renderer, RSS, R-02 and dash guards"
+- ISC-69: Bash — suretas post probe: exit 1 "R-02 guard: suretas found in blog/feed.xml"; guard is case-insensitive and output-side; 0 suretas bytes written
