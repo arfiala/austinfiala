@@ -24,6 +24,7 @@ None. Pure static site, no env, no keys.
 ## Smoke set
 
 - Whole-tree parity: `rsync -avin --checksum` dry-run against the target shows zero pending transfers (proves the entire deployed tree matches the local build, not just one sampled file)
+- Orphan check: remote `find` file list diffed against the local tree is identical (rsync without --delete leaves removed files live; this catches them)
 - `curl` 200: `/`, `/blog/`, `/blog/<latest-slug>/`, `/blog/feed.xml`
 - feed.xml served with an XML content type
 - Live homepage bytes contain the Blog hero link
