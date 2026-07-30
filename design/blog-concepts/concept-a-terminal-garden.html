@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept A: Terminal Garden</title>
+<style>
+:root{
+  --bg:#042118;
+  --panel:#062b20;
+  --phosphor:#3BE38A;
+  --phosphor-dim:#1E7A50;
+  --cream:#F7F8F6;
+  --amber:#E7B549;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--phosphor);
+  font-family:ui-monospace,"Cascadia Code",Menlo,monospace;
+  font-size:16px;
+  line-height:1.7;
+  position:relative;
+}
+/* scanlines */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0.18) 0 1px,transparent 1px 3px);
+}
+.wrap{max-width:860px;margin:0 auto;padding:0 24px;}
+.crt{
+  text-shadow:0 0 6px rgba(59,227,138,0.45);
+}
+.topbar{
+  border-bottom:1px solid var(--phosphor-dim);
+  padding:14px 0;
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.led{width:10px;height:10px;border-radius:50%;background:var(--phosphor);box-shadow:0 0 8px var(--phosphor);}
+.host{color:var(--cream);opacity:0.85;}
+.section{padding:40px 0;}
+.prompt{color:var(--amber);}
+.prompt .path{color:var(--phosphor);}
+.cursor{
+  display:inline-block;width:9px;height:18px;background:var(--phosphor);
+  vertical-align:text-bottom;
+  animation:blink 1.1s steps(1) infinite;
+}
+@keyframes blink{50%{opacity:0;}}
+.listing{margin:18px 0 0;padding:0;list-style:none;}
+.listing li{padding:6px 0;display:flex;gap:18px;flex-wrap:wrap;}
+.perm{color:var(--phosphor-dim);}
+.date{color:var(--cream);opacity:0.75;min-width:12ch;}
+a.post{color:var(--phosphor);text-decoration:none;border-bottom:1px dashed var(--phosphor-dim);}
+a.post:hover{background:var(--phosphor);color:var(--bg);text-shadow:none;}
+.comment{color:var(--phosphor-dim);}
+.sprout{margin:34px 0 0;}
+.card{
+  margin-top:44px;
+  border:1px solid var(--phosphor-dim);
+  border-radius:6px;
+  padding:26px 28px;
+  background:var(--panel);
+}
+.card h2{
+  font-size:1.4rem;margin:0 0 6px;color:var(--cream);
+  font-weight:700;letter-spacing:0.01em;
+}
+.meta{color:var(--amber);font-size:0.85rem;margin:0 0 18px;}
+.card p{margin:0 0 14px;color:#CDE8D9;text-shadow:none;max-width:60ch;}
+.card code{
+  background:rgba(59,227,138,0.12);
+  border:1px solid var(--phosphor-dim);
+  border-radius:4px;padding:1px 6px;color:var(--phosphor);
+}
+.footer{
+  border-top:1px solid var(--phosphor-dim);
+  margin-top:56px;padding:22px 0 40px;
+  color:var(--phosphor-dim);
+  font-size:0.85rem;
+}
+.footer a{color:var(--phosphor);}
+</style>
+</head>
+<body>
+<div class="wrap crt">
+  <div class="topbar">
+    <span class="led"></span>
+    <span class="host">austin@newjersey : ~/blog</span>
+    <span class="comment"># uptime: pleasantly boring</span>
+  </div>
+
+  <div class="section">
+    <p class="prompt">$ <span class="path">ls -la posts/</span></p>
+    <ul class="listing">
+      <li>
+        <span class="perm">-rw-r--r--</span>
+        <span class="date">jul 30 2026</span>
+        <a class="post" href="#">why-this-site-has-zero-dependencies.md</a>
+      </li>
+      <li>
+        <span class="perm">-rw-r--r--</span>
+        <span class="date">coming soon</span>
+        <span class="comment">your next note grows here</span>
+      </li>
+    </ul>
+
+    <pre class="sprout comment">        \|/
+      .  \|/  .        # the garden: one post planted,
+    ___\__\|/__/___    # zero dependencies to water
+</pre>
+    <p class="prompt">$ <span class="path">cat posts/why-this-site-has-zero-dependencies.md</span><span class="cursor"></span></p>
+
+    <article class="card">
+      <h2>Why this site has zero dependencies</h2>
+      <p class="meta">## filed july 30, 2026 . 2 min read . tags: [simplicity, security]</p>
+      <p>This site is a static page built by one TypeScript script. No framework, no packages, no JavaScript shipped to your browser. The build reads a few markdown files and writes plain HTML and CSS. That is the whole system.</p>
+      <p>Publishing a post here means dropping a markdown file in a folder and running <code>bun src/build.ts</code>. A site I cannot break is a site I never have to fix.</p>
+    </article>
+  </div>
+
+  <div class="footer">
+    <p>[ <a href="#">home</a> ] [ <a href="#">rss</a> ] [ <a href="#">email</a> ]  .  (c) 2026 austin fiala  .  <span class="comment"># no trackers, no cookies, no drama</span></p>
+  </div>
+</div>
+</body>
+</html>

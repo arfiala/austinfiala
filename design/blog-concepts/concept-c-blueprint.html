@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept C: Blueprint</title>
+<style>
+:root{
+  --ground:#0B3D2E;
+  --grid:rgba(43,182,115,0.16);
+  --paper:#F7F8F6;
+  --ink:#141917;
+  --emerald:#2BB673;
+  --gold:#C9973F;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:
+    repeating-linear-gradient(0deg,var(--grid) 0 1px,transparent 1px 44px),
+    repeating-linear-gradient(90deg,var(--grid) 0 1px,transparent 1px 44px),
+    var(--ground);
+  color:var(--paper);
+  font-family:ui-sans-serif,system-ui,sans-serif;
+  font-size:17px;
+  line-height:1.65;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px;}
+.mono{font-family:ui-monospace,monospace;}
+.titleblock{
+  margin:44px 0 0;
+  border:2px solid var(--emerald);
+  display:flex;flex-wrap:wrap;
+}
+.titleblock .cell{
+  padding:12px 18px;border-right:1px solid rgba(43,182,115,0.5);
+}
+.titleblock .cell:last-child{border-right:0;margin-left:auto;}
+.label{font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);display:block;}
+.value{font-weight:700;}
+h1.sheet{
+  font-size:clamp(1.9rem,5vw,2.6rem);
+  margin:38px 0 8px;font-weight:800;letter-spacing:-0.01em;
+}
+.sheet-sub{color:var(--emerald);margin:0 0 34px;}
+.print{
+  position:relative;
+  background:var(--paper);
+  color:var(--ink);
+  border-radius:4px;
+  padding:30px 32px 26px;
+  margin:26px 0 0;
+}
+/* corner ticks */
+.print::before,.print::after,
+.print .tick-a,.print .tick-b{
+  content:"";position:absolute;width:16px;height:16px;
+  border:2px solid var(--gold);
+}
+.print::before{top:-6px;left:-6px;border-right:0;border-bottom:0;}
+.print::after{top:-6px;right:-6px;border-left:0;border-bottom:0;}
+.print .tick-a{position:absolute;bottom:-6px;left:-6px;border-right:0;border-top:0;}
+.print .tick-b{position:absolute;bottom:-6px;right:-6px;border-left:0;border-top:0;}
+.printhead{
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+  border-bottom:2px dashed rgba(20,25,23,0.25);
+  padding-bottom:12px;margin-bottom:16px;
+}
+.noteno{
+  font-family:ui-monospace,monospace;font-weight:700;font-size:0.8rem;
+  color:var(--paper);background:var(--ground);border-radius:3px;padding:3px 9px;
+}
+.print h2{margin:0;font-size:1.5rem;font-weight:800;color:var(--ground);}
+.print h2 a{color:inherit;text-decoration:none;}
+.print h2 a:hover{border-bottom:3px solid var(--gold);}
+.stamp{
+  margin-left:auto;
+  font-family:ui-monospace,monospace;
+  font-weight:700;font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--gold);border:2px solid var(--gold);border-radius:3px;
+  padding:3px 9px;transform:rotate(-2deg);
+}
+.print p{margin:0 0 12px;max-width:58ch;}
+.specline{
+  font-family:ui-monospace,monospace;font-size:0.8rem;color:#4c574f;
+  border-top:2px dashed rgba(20,25,23,0.25);padding-top:12px;margin-top:16px;
+  display:flex;gap:22px;flex-wrap:wrap;
+}
+.doodle{
+  margin:18px 0 0;display:flex;align-items:center;gap:10px;color:var(--gold);
+  font-family:ui-monospace,monospace;font-size:0.85rem;
+}
+.trace{margin:40px 0 0;}
+.legend{
+  margin:40px 0 60px;
+  border:2px solid var(--emerald);
+  padding:18px 22px;
+  display:flex;gap:26px;flex-wrap:wrap;
+  font-size:0.85rem;
+}
+.legend .key{display:flex;align-items:center;gap:8px;}
+.swatch{width:14px;height:14px;border:1px solid var(--paper);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="titleblock mono">
+    <div class="cell"><span class="label">Project</span><span class="value">austinfiala.com</span></div>
+    <div class="cell"><span class="label">Sheet</span><span class="value">BLOG / 01</span></div>
+    <div class="cell"><span class="label">Drawn by</span><span class="value">A. Fiala</span></div>
+    <div class="cell"><span class="label">Rev</span><span class="value">2026.07.30</span></div>
+  </div>
+
+  <h1 class="sheet">The Drafting Table</h1>
+  <p class="sheet-sub mono">// working notes on security, drawn to scale</p>
+
+  <article class="print">
+    <span class="tick-a"></span><span class="tick-b"></span>
+    <div class="printhead">
+      <span class="noteno">NOTE 001</span>
+      <h2><a href="#">Why this site has zero dependencies</a></h2>
+      <span class="stamp">Public copy</span>
+    </div>
+    <p>This site is a static page built by one TypeScript script. No framework, no packages, no JavaScript shipped to your browser. The build reads a few markdown files and writes plain HTML and CSS. That is the whole system.</p>
+    <p>Fewer moving parts means fewer failure modes, a smaller attack surface, and nothing to patch on a Tuesday night.</p>
+    <div class="specline">
+      <span>DATE: JUL 30 2026</span>
+      <span>READ: 2 MIN</span>
+      <span>DEPS: 0</span>
+      <span>JS SHIPPED: 0 KB</span>
+    </div>
+  </article>
+
+  <div class="doodle">
+    <svg width="70" height="34" viewBox="0 0 70 34">
+      <path d="M4 28 C 24 30, 40 22, 58 8" fill="none" stroke="#C9973F" stroke-width="2.5" stroke-linecap="round"/>
+      <path d="M50 8 l9 -2 -3 9" fill="none" stroke="#C9973F" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>start here, new notes pin up as they are drawn</span>
+  </div>
+
+  <svg class="trace" width="100%" height="46" viewBox="0 0 800 46" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 23 h210 l16 -14 h90 l16 14 h130 l14 14 h110 l14 -14 h200" fill="none" stroke="#2BB673" stroke-width="2"/>
+    <circle cx="210" cy="23" r="4" fill="#C9973F"/>
+    <circle cx="462" cy="23" r="4" fill="#C9973F"/>
+    <circle cx="800" cy="23" r="4" fill="#2BB673"/>
+  </svg>
+
+  <div class="legend mono">
+    <span class="key"><span class="swatch" style="background:#0B3D2E"></span> evergreen ground</span>
+    <span class="key"><span class="swatch" style="background:#2BB673"></span> emerald line work</span>
+    <span class="key"><span class="swatch" style="background:#C9973F"></span> gold stamps + doodles</span>
+    <span class="key"><span class="swatch" style="background:#F7F8F6"></span> paper prints</span>
+  </div>
+</div>
+</body>
+</html>
