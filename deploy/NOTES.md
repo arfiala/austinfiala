@@ -39,4 +39,6 @@ None. Pure static site, no env, no keys.
 
 ## Deploy log
 
+- 2026-07-30 | 0ba7c39 (+ 6dd1b88 ISA) | blueprint blog restyle | rsync per method, 5 files | outcome: clean. Whole-tree checksum parity zero pending, four URLs 200, "The Drafting Table" live, versioned stylesheet URL 200, zero suretas live, suretas/fit/day 200 after, live real-Chrome render confirmed. Note: rsync re-sent byte-identical index.html on mtime alone (rebuilds touch mtimes); the checksum parity dry-run is the real content proof.
+
 - 2026-07-30 | f0d2fa3 (+ c534224 ISA) | first blog deploy | rsync per method above, 7 files | outcome: clean. All four URLs 200, feed text/xml, live blog index byte-matched local (md5 7e0462d3), zero suretas in live bytes, suretas/fit/day all 200 after, live render confirmed in real Chrome. No surprises.

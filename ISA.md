@@ -144,6 +144,9 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-95: whole-tree build determinism proven: identical tree md5 across two builds plus a TZ/LC_ALL variant [added per advisor]
 - [x] ISC-96: blog stylesheet links carry a CSS content-hash version param (stale-cache lesson); homepage link untouched [added per advisor]
 - [x] ISC-97: positive structure guard in build dies if the index loses The Drafting Table, the title block, or NOTE numbering [added per advisor]
+- [x] ISC-98: blueprint restyle DEPLOYED: rsync clean, whole-tree checksum parity zero pending, four live URLs 200 via public DNS, The Drafting Table marker live, versioned stylesheet URL 200, live real-Chrome render
+- [x] ISC-99: Anti: zero orphans on the box (remote file list diffed identical to local tree)
+- [x] ISC-100: Anti: sibling sites 200 after; zero suretas in live blog bytes; no localhost/dev URLs in deployed tree; every asset href resolves
 
 ## Test Strategy
 
@@ -202,6 +205,7 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - 2026-07-30T10:44 — URL scheme: plan reserved /notes/[slug] but Austin said "blog"; /blog/[slug]/ wins (matches user vocabulary, zero live links to /notes/ exist to break). Reservation superseded in Out of Scope.
 - 2026-07-30T10:44 — EnterPlanMode skipped despite Advanced tier: classifier DIRECTIVE says execute now, task is additive and reversible, deploy stays confirm-gated on Austin. Logged as the doctrine deviation it is.
 - 2026-07-30T11:05 — Advisor pass: its top concern (javascript: link schemes) was already closed by the safeHref allowlist and probed; real catches adopted: hostile front-matter title probe (passed after probing), atom:link self reference in the feed, RSS discovery link in page heads, and the dash rule made structural (build dies on em/en dash in blog output, legacy homepage copy exempt). Advisor's auto-state loaded the wrong ISA (ironman slug); this project ISA was the real harness throughout. Follow-ups accepted, not built: probes as a permanent test file, host-side path/content-type verification at deploy. Drafts policy: none, a post in the folder is published.
+- 2026-07-30T15:05 — Blueprint deploy done on Austin's second "deploy". Scoping note for the record: the concepts task ISA's ISC-13 ("live site untouched") was scoped to that exploration task only and is not violated by this later deploy task. Advisor's --auto-state keeps loading the latest MEMORY/WORK ISA instead of this project ISA; its state complaints were noise both times, but future advisor calls on project work should name the project ISA path explicitly in the TASK text. Rollback path for this deploy: rebuild from `d2eff12` and rsync (statics). Today's commits are LOCAL ONLY; GitHub push awaits Austin's word per the ask-before-push boundary.
 - 2026-07-30T11:05 — Deploy deliberately NOT executed: house pattern gates production on Austin's explicit "deploy". Deploy path when he says go: bun src/build.ts, rsync public/ dir-to-dir (trailing slash, no --delete) to /opt/austinfiala/public/, no service restart needed, then curl /blog/ + feed.xml live and confirm content-type.
 
 ## Changelog
