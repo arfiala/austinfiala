@@ -168,6 +168,8 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-116: committed 43c430a; deploy staged, gated on Austin's word
 - [x] ISC-117: canonical, og:locale, og:image:alt, article:published_time added per advisor; hostile-title probe re-run against og attributes (fully escaped)
 - [x] ISC-118: URL-policy enforcement guard: build dies if canonical/og:url/sitemap disagree with a page's emitted path
+- [x] ISC-119: gap-fix slate DEPLOYED: parity zero pending, zero orphans, six live URLs 200, card.png live as image/png, og/canonical/bio markers in live bytes, siblings 200
+- [DEFERRED-VERIFY] ISC-120: LinkedIn card render confirmed via Post Inspector — automation browser has no LinkedIn session; FOLLOWUP-austinfiala-linkedin-inspector (Austin pastes a post URL into linkedin.com/post-inspector once)
 
 ## Test Strategy
 
