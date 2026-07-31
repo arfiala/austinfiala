@@ -150,22 +150,24 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 
 ### Gap-report implementation (2026-07-31, Austin's "implement"; ISC-101..116)
 
-- [ ] ISC-101: every post page renders an author bio box with factual copy and a Work-with-me link to /#services
-- [ ] ISC-102: bio box styled in the blueprint language (paper card, existing vars only)
-- [ ] ISC-103: og:title, og:description, og:type, og:url, og:site_name, og:image (+dimensions) on home, blog index, and post pages
-- [ ] ISC-104: twitter:card summary_large_image + title/description/image on the same pages
-- [ ] ISC-105: og:image and twitter:image are absolute https URLs
-- [ ] ISC-106: public/assets/card.png exists, 1200x630 PNG, brand blueprint design, committed with provenance note
-- [ ] ISC-107: card SVG source committed under design/
-- [ ] ISC-108: robots.txt emitted by the build with an explicit crawler stance in comments (search + AI crawlers welcomed)
-- [ ] ISC-109: sitemap.xml emitted: home, blog index, every post with lastmod = post date; xmllint-valid
-- [ ] ISC-110: robots.txt references the sitemap URL
-- [ ] ISC-111: URL policy frozen in README (permalink scheme, feed path, GUID derivation, title format) and mirrored in a build.ts comment
-- [ ] ISC-112: build still deterministic (double build + TZ variant, identical tree hash)
-- [ ] ISC-113: Anti: all guards still pass (zero suretas, zero blog dashes, zero script tags, positive structure guard)
-- [ ] ISC-114: Anti: feed.xml byte-identical (no feed change this task)
-- [ ] ISC-115: Interceptor render: bio box on post page, homepage unbroken
-- [ ] ISC-116: committed; deploy staged, gated on Austin's word
+- [x] ISC-101: every post page renders an author bio box with factual copy and a Work-with-me link to /#services
+- [x] ISC-102: bio box styled in the blueprint language (paper card, existing vars only)
+- [x] ISC-103: og:title, og:description, og:type, og:url, og:site_name, og:image (+dimensions) on home, blog index, and post pages
+- [x] ISC-104: twitter:card summary_large_image + title/description/image on the same pages
+- [x] ISC-105: og:image and twitter:image are absolute https URLs
+- [x] ISC-106: public/assets/card.png exists, 1200x630 PNG, brand blueprint design, committed with provenance note
+- [x] ISC-107: card SVG source committed under design/
+- [x] ISC-108: robots.txt emitted by the build with an explicit crawler stance in comments (search + AI crawlers welcomed)
+- [x] ISC-109: sitemap.xml emitted: home, blog index, every post with lastmod = post date; xmllint-valid
+- [x] ISC-110: robots.txt references the sitemap URL
+- [x] ISC-111: URL policy frozen in README (permalink scheme, feed path, GUID derivation, title format) and mirrored in a build.ts comment
+- [x] ISC-112: build still deterministic (double build + TZ variant, identical tree hash)
+- [x] ISC-113: Anti: all guards still pass (zero suretas, zero blog dashes, zero script tags, positive structure guard)
+- [x] ISC-114: Anti: feed.xml byte-identical (no feed change this task)
+- [x] ISC-115: Interceptor render: bio box on post page, homepage unbroken
+- [x] ISC-116: committed 43c430a; deploy staged, gated on Austin's word
+- [x] ISC-117: canonical, og:locale, og:image:alt, article:published_time added per advisor; hostile-title probe re-run against og attributes (fully escaped)
+- [x] ISC-118: URL-policy enforcement guard: build dies if canonical/og:url/sitemap disagree with a page's emitted path
 
 ## Test Strategy
 
