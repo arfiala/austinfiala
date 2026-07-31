@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#2BB673" stroke-opacity="0.16" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#0B3D2E"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <rect x="80" y="70" width="1040" height="74" fill="none" stroke="#2BB673" stroke-width="3"/>
+  <line x1="420" y1="70" x2="420" y2="144" stroke="#2BB673" stroke-opacity="0.5" stroke-width="2"/>
+  <line x1="880" y1="70" x2="880" y2="144" stroke="#2BB673" stroke-opacity="0.5" stroke-width="2"/>
+  <text x="104" y="99" font-family="monospace" font-size="17" letter-spacing="3" fill="#C9973F">PROJECT</text>
+  <text x="104" y="128" font-family="monospace" font-size="23" font-weight="bold" fill="#F7F8F6">austinfiala.com</text>
+  <text x="444" y="99" font-family="monospace" font-size="17" letter-spacing="3" fill="#C9973F">SHEET</text>
+  <text x="444" y="128" font-family="monospace" font-size="23" font-weight="bold" fill="#F7F8F6">WORKING NOTES ON SECURITY</text>
+  <text x="904" y="99" font-family="monospace" font-size="17" letter-spacing="3" fill="#C9973F">DRAWN BY</text>
+  <text x="904" y="128" font-family="monospace" font-size="23" font-weight="bold" fill="#F7F8F6">A. Fiala</text>
+
+  <text x="80" y="330" font-family="sans-serif" font-size="96" font-weight="bold" fill="#F7F8F6">Austin Fiala</text>
+  <text x="80" y="396" font-family="monospace" font-size="30" fill="#2BB673">// cybersecurity consultant for financial firms</text>
+
+  <text x="80" y="490" font-family="sans-serif" font-size="26" fill="#F7F8F6" fill-opacity="0.85">Risk assessments, vCISO advisory, and AI governance</text>
+  <text x="80" y="528" font-family="sans-serif" font-size="26" fill="#F7F8F6" fill-opacity="0.85">for RIAs, funds, and community financial institutions.</text>
+
+  <path d="M80 570 h240 l14 -12 h90 l14 12 h180" fill="none" stroke="#2BB673" stroke-width="3"/>
+  <circle cx="320" cy="570" r="6" fill="#C9973F"/>
+  <circle cx="618" cy="570" r="6" fill="#2BB673"/>
+
+  <path d="M1064 190 h44 v10 h-44 z M1058 200 h56 v10 h-56 z M1052 210 h68 v56 a34 34 0 0 1 -68 0 z" fill="#C9973F" opacity="0.9"/>
+  <path d="M1120 70 h-22 M1120 70 v22 M80 560 h22 M80 560 v-22" stroke="#C9973F" stroke-width="4" fill="none"/>
+</svg>

@@ -148,6 +148,25 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - [x] ISC-99: Anti: zero orphans on the box (remote file list diffed identical to local tree)
 - [x] ISC-100: Anti: sibling sites 200 after; zero suretas in live blog bytes; no localhost/dev URLs in deployed tree; every asset href resolves
 
+### Gap-report implementation (2026-07-31, Austin's "implement"; ISC-101..116)
+
+- [ ] ISC-101: every post page renders an author bio box with factual copy and a Work-with-me link to /#services
+- [ ] ISC-102: bio box styled in the blueprint language (paper card, existing vars only)
+- [ ] ISC-103: og:title, og:description, og:type, og:url, og:site_name, og:image (+dimensions) on home, blog index, and post pages
+- [ ] ISC-104: twitter:card summary_large_image + title/description/image on the same pages
+- [ ] ISC-105: og:image and twitter:image are absolute https URLs
+- [ ] ISC-106: public/assets/card.png exists, 1200x630 PNG, brand blueprint design, committed with provenance note
+- [ ] ISC-107: card SVG source committed under design/
+- [ ] ISC-108: robots.txt emitted by the build with an explicit crawler stance in comments (search + AI crawlers welcomed)
+- [ ] ISC-109: sitemap.xml emitted: home, blog index, every post with lastmod = post date; xmllint-valid
+- [ ] ISC-110: robots.txt references the sitemap URL
+- [ ] ISC-111: URL policy frozen in README (permalink scheme, feed path, GUID derivation, title format) and mirrored in a build.ts comment
+- [ ] ISC-112: build still deterministic (double build + TZ variant, identical tree hash)
+- [ ] ISC-113: Anti: all guards still pass (zero suretas, zero blog dashes, zero script tags, positive structure guard)
+- [ ] ISC-114: Anti: feed.xml byte-identical (no feed change this task)
+- [ ] ISC-115: Interceptor render: bio box on post page, homepage unbroken
+- [ ] ISC-116: committed; deploy staged, gated on Austin's word
+
 ## Test Strategy
 
 | isc | type | check | threshold | tool |
@@ -205,6 +224,8 @@ https://austinfiala.com serves the v1 single-page site over valid TLS with the p
 - 2026-07-30T10:44 — URL scheme: plan reserved /notes/[slug] but Austin said "blog"; /blog/[slug]/ wins (matches user vocabulary, zero live links to /notes/ exist to break). Reservation superseded in Out of Scope.
 - 2026-07-30T10:44 — EnterPlanMode skipped despite Advanced tier: classifier DIRECTIVE says execute now, task is additive and reversible, deploy stays confirm-gated on Austin. Logged as the doctrine deviation it is.
 - 2026-07-30T11:05 — Advisor pass: its top concern (javascript: link schemes) was already closed by the safeHref allowlist and probed; real catches adopted: hostile front-matter title probe (passed after probing), atom:link self reference in the feed, RSS discovery link in page heads, and the dash rule made structural (build dies on em/en dash in blog output, legacy homepage copy exempt). Advisor's auto-state loaded the wrong ISA (ironman slug); this project ISA was the real harness throughout. Follow-ups accepted, not built: probes as a permanent test file, host-side path/content-type verification at deploy. Drafts policy: none, a post in the folder is published.
+- 2026-07-31T09:40 — refined: v1 ISC-17 (no raster imagery in public/) gets a scoped exception for /assets/card.png, the social-card image. Social platforms require raster; the card is brand-authored (SVG source in design/, rasterized locally via rsvg-convert), not stock. The no-stock-photography intent stands.
+- 2026-07-31T09:40 — robots.txt stance chosen without asking: search and AI crawlers welcomed, stated in comments. Rationale: the site is public marketing content and reach serves the consulting goal; the stance is one line to flip if Austin disagrees.
 - 2026-07-30T15:05 — Blueprint deploy done on Austin's second "deploy". Scoping note for the record: the concepts task ISA's ISC-13 ("live site untouched") was scoped to that exploration task only and is not violated by this later deploy task. Advisor's --auto-state keeps loading the latest MEMORY/WORK ISA instead of this project ISA; its state complaints were noise both times, but future advisor calls on project work should name the project ISA path explicitly in the TASK text. Rollback path for this deploy: rebuild from `d2eff12` and rsync (statics). Today's commits are LOCAL ONLY; GitHub push awaits Austin's word per the ask-before-push boundary.
 - 2026-07-30T11:05 — Deploy deliberately NOT executed: house pattern gates production on Austin's explicit "deploy". Deploy path when he says go: bun src/build.ts, rsync public/ dir-to-dir (trailing slash, no --delete) to /opt/austinfiala/public/, no service restart needed, then curl /blog/ + feed.xml live and confirm content-type.
 

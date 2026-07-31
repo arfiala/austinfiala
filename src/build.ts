@@ -114,10 +114,37 @@ const serviceItems = services.items
 
 const metaDescription = esc(site.tagline);
 
+// Absolute origin for og:url, og:image, canonical, feed and sitemap entries.
+const SITE_URL = "https://austinfiala.com";
+
+// Social-card meta shared by every page. og:image must be an absolute URL
+// (LinkedIn requirement) and points at the committed 1200x630 brand card.
+function socialMeta(title: string, description: string, path: string, ogType: string, publishedIso = ""): string {
+  const published = publishedIso
+    ? `\n<meta property="article:published_time" content="${publishedIso}">`
+    : "";
+  return `<link rel="canonical" href="${SITE_URL}${path}">
+<meta property="og:type" content="${ogType}">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(description)}">
+<meta property="og:url" content="${SITE_URL}${path}">
+<meta property="og:site_name" content="Austin Fiala">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="${SITE_URL}/assets/card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Austin Fiala, cybersecurity consultant for financial firms, drawn as a blueprint title card">${published}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="${esc(title)}">
+<meta name="twitter:description" content="${esc(description)}">
+<meta name="twitter:image" content="${SITE_URL}/assets/card.png">`;
+}
+
 const html = `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Austin Fiala — Cybersecurity Consultant</title>
 <meta name="description" content="${metaDescription}">
+${socialMeta("Austin Fiala | Cybersecurity Consultant", site.tagline, "/", "website")}
 <link rel="icon" href="${faviconHref}">
 <link rel="stylesheet" href="styles.css">
 
@@ -196,7 +223,11 @@ interface BlogPost {
 }
 
 const BLOG = join(CONTENT, "blog");
-const SITE_URL = "https://austinfiala.com";
+
+// URL POLICY (FROZEN 2026-07-31, mirrored in README):
+// posts live at /blog/<slug>/ (flat, dateless), the feed stays at
+// /blog/feed.xml, and feed GUIDs are the permalink URLs. Changing any of
+// these breaks subscribers and inbound links; do not.
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -323,11 +354,12 @@ if (posts.length === 0) die("blog: content/blog/ has no posts (the blog never sh
 
 const blogDescription = "Notes on cybersecurity, risk, and building simple systems.";
 
-function pageShell(title: string, description: string, body: string): string {
+function pageShell(title: string, description: string, path: string, ogType: string, body: string, publishedIso = ""): string {
   return `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
+${socialMeta(title, description, path, ogType, publishedIso)}
 <link rel="icon" href="${faviconHref}">
 <link rel="alternate" type="application/rss+xml" title="Austin Fiala Blog" href="/blog/feed.xml">
 <link rel="stylesheet" href="/styles.css">
@@ -337,6 +369,12 @@ ${body}
 </body>
 `;
 }
+
+const bioBox = `<aside class="bp-bio" aria-label="About the author">
+    <span class="bp-bio-label">Drawn by</span>
+    <p class="bp-bio-copy"><strong>Austin Fiala</strong> is a cybersecurity consultant for financial firms: risk assessments, vCISO advisory, and AI governance for RIAs, funds, and community financial institutions.</p>
+    <p class="bp-bio-cta"><a href="/#services">Work with me</a></p>
+  </aside>`;
 
 // Sheet revision is the latest post date, so the build stays deterministic.
 const revStamp = posts[0].dateIso.replace(/-/g, ".");
@@ -393,6 +431,8 @@ const postCards = posts
 const blogIndexHtml = pageShell(
   "Blog | Austin Fiala",
   blogDescription,
+  "/blog/",
+  "website",
   `${bpTitleBlock("BLOG / 01")}
 
 <main class="wrap bp-main">
@@ -416,6 +456,8 @@ function postPage(p: BlogPost): string {
   return pageShell(
     `${p.title} | Austin Fiala`,
     p.summary,
+    `/blog/${p.slug}/`,
+    "article",
     `${bpTitleBlock(`BLOG / NOTE ${noteNo(p)}`)}
 
 <main class="wrap bp-main">
@@ -432,10 +474,12 @@ ${p.bodyHtml}
       <span>READ: ${p.readMin} MIN</span>
     </div>
   </article>
+  ${bioBox}
   <p class="bp-crumbs"><a href="/blog/">All notes</a> · <a href="/">Home</a></p>
 </main>
 
 ${blogFooter}`,
+    `${p.dateIso}T00:00:00Z`,
   );
 }
 
@@ -450,6 +494,25 @@ const feedItems = posts
     </item>`,
   )
   .join("\n");
+
+// robots.txt carries the site's explicit crawler stance: search and AI
+// crawlers are welcome. This is public marketing content; reach is the point.
+const robotsTxt = `# austinfiala.com crawler policy
+# Search engines and AI crawlers are welcome here. This is public
+# professional content with no user data, no tracking, and no paywall.
+User-agent: *
+Allow: /
+
+Sitemap: ${SITE_URL}/sitemap.xml
+`;
+
+const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>${SITE_URL}/</loc></url>
+  <url><loc>${SITE_URL}/blog/</loc><lastmod>${posts[0].dateIso}</lastmod></url>
+${posts.map((p) => `  <url><loc>${SITE_URL}/blog/${p.slug}/</loc><lastmod>${p.dateIso}</lastmod></url>`).join("\n")}
+</urlset>
+`;
 
 const feedXml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -797,6 +860,30 @@ body.bp .footer{margin-top:56px;border-top:1px solid rgba(43,182,115,0.4);}
   color:var(--gold);font-family:ui-monospace,monospace;font-size:0.85rem;
   margin:22px 0 0;
 }
+.bp-bio{
+  margin:26px 0 0;
+  background:var(--offwhite);
+  color:var(--ink);
+  border-radius:4px;
+  border-left:6px solid var(--gold);
+  padding:18px 22px;
+}
+.bp-bio-label{
+  display:block;
+  font-family:ui-monospace,monospace;
+  font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--gold-ink);
+  margin-bottom:6px;
+}
+.bp-bio-copy{margin:0 0 10px;max-width:58ch;font-size:0.95rem;}
+.bp-bio-cta{margin:0;}
+.bp-bio-cta a{
+  display:inline-block;
+  font-family:var(--font-head);font-weight:500;
+  color:var(--offwhite);background:var(--evergreen);
+  border-radius:6px;padding:8px 18px;text-decoration:none;
+}
+.bp-bio-cta a:hover,.bp-bio-cta a:focus{background:var(--emerald);color:var(--evergreen);}
 .bp-crumbs{margin:22px 0 0;font-family:ui-monospace,monospace;}
 .bp-crumbs a,.bp-feednote a{color:var(--emerald);}
 .bp-feednote{margin:22px 0 0;font-family:ui-monospace,monospace;font-size:0.85rem;}
@@ -829,6 +916,8 @@ if (!blogIndexHtml.includes("The Drafting Table") || !blogIndexHtml.includes("bp
 const emitted: [string, string][] = [
   ["index.html", html],
   ["styles.css", css],
+  ["robots.txt", robotsTxt],
+  ["sitemap.xml", sitemapXml],
   ["blog/index.html", versioned(blogIndexHtml)],
   ["blog/feed.xml", feedXml],
   ...posts.map((p): [string, string] => [`blog/${p.slug}/index.html`, versioned(postPage(p))]),
@@ -837,6 +926,17 @@ const emitted: [string, string][] = [
 for (const [rel, content] of emitted) {
   if (/suretas/i.test(content)) {
     die(`R-02 guard: "suretas" found in ${rel}; Suretas stays off this site until R-02 clears`);
+  }
+  // URL-policy enforcement: every blog page's canonical/og:url must match its
+  // emitted path, and the sitemap must carry the same form. Drift dies here.
+  if (rel.startsWith("blog/") && rel.endsWith("index.html")) {
+    const path = `/${rel.slice(0, -"index.html".length)}`;
+    if (!content.includes(`content="${SITE_URL}${path}"`) || !content.includes(`href="${SITE_URL}${path}"`)) {
+      die(`url-policy drift: ${rel} og:url/canonical does not match its path`);
+    }
+    if (path !== "/blog/" && !sitemapXml.includes(`<loc>${SITE_URL}${path}</loc>`)) {
+      die(`url-policy drift: ${path} missing from sitemap`);
+    }
   }
   // Dash rule: no em or en dashes in blog output (legacy homepage copy exempt).
   if (rel.startsWith("blog/") && /[–—]/.test(content)) {

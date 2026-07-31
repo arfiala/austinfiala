@@ -1,0 +1,7 @@
+# austinfiala.com crawler policy
+# Search engines and AI crawlers are welcome here. This is public
+# professional content with no user data, no tracking, and no paywall.
+User-agent: *
+Allow: /
+
+Sitemap: https://austinfiala.com/sitemap.xml
