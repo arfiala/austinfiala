@@ -40,6 +40,8 @@ None. Pure static site, no env, no keys.
 
 ## Deploy log
 
+- 2026-08-03 | 1a5ee38 | Cadence case study post (publish #1 on the PUBLISH/TOUCH counter) | rsync per method, 5 files | outcome: clean. Checksum parity zero pending, zero orphans, four URLs 200 (feed text/xml), siblings suretas/fit/day 200, zero suretas in live post bytes, live real-Chrome render confirmed (NOTE 002, REV 2026.08.03). No surprises.
+
 - 2026-07-31 | 43c430a (+ 3abf382 ISA) | social cards, bio box, robots, sitemap, URL lock-in | rsync per method | outcome: clean. Parity zero pending, zero orphans, six URLs 200 (incl. robots.txt + sitemap.xml), /assets/card.png live as image/png 66054 bytes, bio + canonical + og markers in live bytes, siblings 200. LinkedIn Post Inspector seed attempted via automation browser but it has no LinkedIn session (empty shell); Austin should paste a post URL into linkedin.com/post-inspector once from his own browser.
 
 - 2026-07-30 | 0ba7c39 (+ 6dd1b88 ISA) | blueprint blog restyle | rsync per method, 5 files | outcome: clean. Whole-tree checksum parity zero pending, four URLs 200, "The Drafting Table" live, versioned stylesheet URL 200, zero suretas live, suretas/fit/day 200 after, live real-Chrome render confirmed. Note: rsync re-sent byte-identical index.html on mtime alone (rebuilds touch mtimes); the checksum parity dry-run is the real content proof.
