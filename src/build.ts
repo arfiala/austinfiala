@@ -1118,13 +1118,23 @@ if (!subscribedHtml.includes("You are on the list")) {
 }
 // The mailto fallback is the whole degradation story. If it ever falls out of
 // the band, a dead service becomes a dead end with no way to report it.
-for (const [label, page] of [["homepage", html], ["blog index", blogIndexHtml]] as const) {
-  if (!page.includes(escAttr(emailHref))) {
+//
+// Check the band fragments, never the whole page: the page carries a mailto in
+// its hero and its footer, so a page-wide check passes while the fallback next
+// to the form is gone. Probed 2026-08-14, and it was a false green.
+for (const [label, fragment] of [
+  ["homepage band", subscribeHomeBand],
+  ["blog band", subscribeBlogBand],
+  ["service-down page", subscribeUnavailableHtml],
+] as const) {
+  if (!fragment.includes(SUBSCRIBE_FALLBACK)) {
     die(`subscribe regression: ${label} lost the mailto fallback next to the form`);
   }
 }
-if (!subscribeUnavailableHtml.includes(escAttr(emailHref))) {
-  die("subscribe regression: the service-down page lost the mailto fallback");
+// And the fallback has to still be a way to reach a human. Rewording it into
+// an apology with no link would satisfy the check above and help nobody.
+if (!SUBSCRIBE_FALLBACK.includes("mailto:")) {
+  die("subscribe regression: the fallback copy no longer carries a mailto link");
 }
 // Dash rule applied to the new copy specifically. The homepage as a whole is
 // exempt (legacy copy predates the rule), so guard the band on its own.
