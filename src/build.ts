@@ -114,6 +114,54 @@ const serviceItems = services.items
 
 const metaDescription = esc(site.tagline);
 
+// --- Subscribe band -------------------------------------------------------
+// A plain HTML form that posts to the subscribe service (src/subscribe/server.ts,
+// proxied at /subscribe). No JavaScript: the page keeps shipping zero bytes of
+// script, and the form works with scripting switched off entirely.
+//
+// The "website" input is a honeypot. It is moved off-screen with CSS rather
+// than hidden with type="hidden", because a hidden input is not what a form
+// filling bot goes for. People never see it; anything that fills it is dropped
+// server side without a trace.
+
+const SUBSCRIBE_NOTE = "No spam, unsubscribe by replying.";
+
+// Degradation path. The form is the one thing on this site that talks to a
+// running service, so it is the one thing that can fail while the pages
+// themselves stay up. The fallback is a plain mailto link printed next to the
+// form: nothing to break, nothing to swallow an error, and a reader whose
+// submit just failed still has a way onto the list.
+const emailHref = site.links.find((l) => l.label === "Email")?.href;
+if (!emailHref) die("site.links has no Email entry; the subscribe fallback needs one");
+const SUBSCRIBE_FALLBACK =
+  `If the form fails, <a href="${escAttr(emailHref)}">email me</a> and I will add you by hand.`;
+
+function subscribeForm(idPrefix: string, source: string): string {
+  return `<form class="sub-form" method="post" action="/subscribe">
+        <div class="sub-field">
+          <label class="sub-label" for="${idPrefix}-email">Email address</label>
+          <input class="sub-input" id="${idPrefix}-email" type="email" name="email"
+                 required maxlength="254" autocomplete="email" placeholder="you@yourfirm.com">
+        </div>
+        <div class="sub-hp" aria-hidden="true">
+          <label for="${idPrefix}-website">Website</label>
+          <input id="${idPrefix}-website" type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
+        <input type="hidden" name="source" value="${escAttr(source)}">
+        <button class="sub-button" type="submit">Subscribe</button>
+      </form>
+      <p class="sub-note">${esc(SUBSCRIBE_NOTE)} ${SUBSCRIBE_FALLBACK}</p>`;
+}
+
+const subscribeHomeBand = `  <section class="section" id="subscribe" aria-labelledby="subscribe-h">
+    <h2 class="section-title" id="subscribe-h">Get new notes by email</h2>
+    <p class="lede">One short email when a new note goes up. That is the whole list.</p>
+      ${subscribeForm("sub", "/")}
+  </section>`;
+
+// The blueprint variant of the band is assembled further down, once the
+// blueprint building blocks (corner ticks, print head) exist.
+
 // Absolute origin for og:url, og:image, canonical, feed and sitemap entries.
 const SITE_URL = "https://austinfiala.com";
 
@@ -196,6 +244,10 @@ ${serviceItems}
     <h2 class="section-title" id="about-h">About</h2>
     <p class="about">${esc(aboutParagraph)}</p>
   </section>
+
+  <hr class="rule">
+
+${subscribeHomeBand}
 </main>
 
 <footer class="footer">
@@ -428,6 +480,19 @@ const postCards = posts
   )
   .join("\n");
 
+// Blueprint variant of the subscribe band: the same plain form, drawn as one
+// more paper print pinned to the drafting table.
+const subscribeBlogBand = `    <section class="bp-print bp-sub" id="subscribe" aria-labelledby="bsubscribe-h">
+      ${bpTicks}
+      <div class="bp-printhead">
+        <span class="bp-noteno">MAIL</span>
+        <h2 class="bp-title" id="bsubscribe-h">Get new notes by email</h2>
+        <span class="bp-stamp">Subscribe</span>
+      </div>
+      <p>One short email when a new note goes up. That is the whole list.</p>
+      ${subscribeForm("bsub", "/blog/")}
+    </section>`;
+
 const blogIndexHtml = pageShell(
   "Blog | Austin Fiala",
   blogDescription,
@@ -446,6 +511,7 @@ ${postCards}
     </svg>
     <span>new notes pin up here as they are drawn</span>
   </div>
+${subscribeBlogBand}
   <p class="bp-feednote"><a href="/blog/feed.xml">RSS feed</a></p>
 </main>
 
@@ -494,6 +560,80 @@ const feedItems = posts
     </item>`,
   )
   .join("\n");
+
+// --- Subscribe notice pages -----------------------------------------------
+// Two small pages the subscribe flow lands on: the thanks page after a good
+// post, and the service-down page Caddy serves when the proxy cannot reach the
+// service at all. Both are deliberately noindex and deliberately absent from
+// the sitemap: they are destinations for one person mid-flow, not pages anyone
+// should land on cold.
+//
+// `lede` is the one parameter that carries markup (a mailto link), so it is
+// composed here from literals and never from content files.
+
+function noticePage(opts: {
+  title: string;
+  description: string;
+  eyebrow: string;
+  heading: string;
+  lede: string;
+  path: string;
+}): string {
+  return `<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(opts.title)} | Austin Fiala</title>
+<meta name="description" content="${esc(opts.description)}">
+<meta name="robots" content="noindex, follow">
+<link rel="canonical" href="${SITE_URL}${escAttr(opts.path)}">
+<link rel="icon" href="${faviconHref}">
+<link rel="stylesheet" href="/styles.css">
+
+<header class="hero">
+  <div class="hero-inner wrap">
+    <p class="eyebrow">${esc(opts.eyebrow)}</p>
+    <h1 class="hero-name">${esc(opts.heading)}</h1>
+    <p class="hero-tagline">${opts.lede}</p>
+    <nav class="hero-links" aria-label="Primary">
+        <a class="hero-link" href="/">Home</a>
+        <a class="hero-link" href="/blog/">Read the notes</a>
+        <a class="hero-link" href="/blog/feed.xml">RSS feed</a>
+    </nav>
+  </div>
+</header>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <p class="copyright">© 2026 Austin Fiala</p>
+    <nav class="footer-links" aria-label="Footer">
+        ${footerLinks}
+    </nav>
+  </div>
+</footer>
+`;
+}
+
+const subscribedHtml = noticePage({
+  title: "You are on the list",
+  description: "Confirmation that your email address was added to the list.",
+  eyebrow: "Mailing list",
+  heading: "You are on the list",
+  lede: `Thanks. You will get one short email when a new note goes up, and nothing else. ${esc(SUBSCRIBE_NOTE)}`,
+  path: "/subscribed/",
+});
+
+// Served by Caddy's handle_errors when the subscribe service is unreachable,
+// so a reader whose submit hit a dead service gets a plain sentence and a way
+// through instead of a bare gateway error. See deploy/NOTES.md.
+const subscribeUnavailableHtml = noticePage({
+  title: "The signup form is down",
+  description: "The subscribe service is not answering right now.",
+  eyebrow: "Mailing list",
+  heading: "The signup form is down",
+  lede:
+    "Sorry. The part that stores your address is not answering right now, so nothing was saved. " +
+    SUBSCRIBE_FALLBACK,
+  path: "/subscribe-unavailable/",
+});
 
 // robots.txt carries the site's explicit crawler stance: search and AI
 // crawlers are welcome. This is public marketing content; reach is the point.
@@ -747,6 +887,53 @@ a{color:var(--link);}
 
 .about{margin:0;max-width:40em;}
 
+/* --- Subscribe band --- */
+.sub-form{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  gap:12px;
+  margin:0 0 12px;
+  max-width:34em;
+}
+.sub-field{display:flex;flex-direction:column;gap:6px;flex:1 1 240px;min-width:0;}
+.sub-label{
+  font-family:var(--font-head);
+  font-weight:500;
+  font-size:0.78rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--link);
+}
+.sub-input{
+  font-family:var(--font-body);
+  font-size:1rem;
+  color:var(--ink);
+  background:#fff;
+  border:1px solid rgba(11,61,46,0.3);
+  border-radius:6px;
+  padding:12px 14px;
+  min-width:0;
+}
+.sub-input:focus{outline:2px solid var(--emerald);outline-offset:1px;}
+.sub-button{
+  flex:none;
+  font-family:var(--font-head);
+  font-weight:500;
+  font-size:1rem;
+  color:var(--offwhite);
+  background:var(--evergreen);
+  border:1px solid var(--evergreen);
+  border-radius:6px;
+  padding:12px 28px;
+  cursor:pointer;
+}
+.sub-button:hover,.sub-button:focus{background:var(--emerald);border-color:var(--emerald);color:var(--evergreen);}
+/* Honeypot: kept in the accessibility tree's blind spot rather than removed,
+   so a form filling bot still finds something to fill. */
+.sub-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+.sub-note{margin:0;font-size:0.9rem;color:#4c574f;}
+
 /* --- Footer --- */
 .footer{
   background:var(--evergreen);
@@ -884,6 +1071,9 @@ body.bp .footer{margin-top:56px;border-top:1px solid rgba(43,182,115,0.4);}
   border-radius:6px;padding:8px 18px;text-decoration:none;
 }
 .bp-bio-cta a:hover,.bp-bio-cta a:focus{background:var(--emerald);color:var(--evergreen);}
+.bp-sub .bp-noteno{background:var(--gold-ink);}
+.bp-sub .sub-label{color:var(--gold-ink);}
+.bp-sub .sub-note{margin-bottom:2px;}
 .bp-crumbs{margin:22px 0 0;font-family:ui-monospace,monospace;}
 .bp-crumbs a,.bp-feednote a{color:var(--emerald);}
 .bp-feednote{margin:22px 0 0;font-family:ui-monospace,monospace;font-size:0.85rem;}
@@ -893,6 +1083,8 @@ body.bp .footer{margin-top:56px;border-top:1px solid rgba(43,182,115,0.4);}
   .bp-cell:last-child{margin-left:0;}
   .bp-print{padding:20px 18px 16px;}
   .bp-stamp{margin-left:0;}
+  .sub-form{flex-direction:column;align-items:stretch;}
+  .sub-button{width:100%;}
 }
 `;
 
@@ -913,11 +1105,45 @@ if (!blogIndexHtml.includes("The Drafting Table") || !blogIndexHtml.includes("bp
   die("blueprint regression: blog index lost its drafting-table structure");
 }
 
+// Subscribe regression guard, same reasoning as the blueprint one above: the
+// band is easy to lose in a template refactor and its absence looks like
+// nothing at all rather than like a break.
+for (const [label, page] of [["homepage", html], ["blog index", blogIndexHtml]] as const) {
+  if (!page.includes('action="/subscribe"') || !page.includes('name="website"')) {
+    die(`subscribe regression: ${label} lost its subscribe form or its honeypot`);
+  }
+}
+if (!subscribedHtml.includes("You are on the list")) {
+  die("subscribe regression: /subscribed/ lost its confirmation copy");
+}
+// The mailto fallback is the whole degradation story. If it ever falls out of
+// the band, a dead service becomes a dead end with no way to report it.
+for (const [label, page] of [["homepage", html], ["blog index", blogIndexHtml]] as const) {
+  if (!page.includes(escAttr(emailHref))) {
+    die(`subscribe regression: ${label} lost the mailto fallback next to the form`);
+  }
+}
+if (!subscribeUnavailableHtml.includes(escAttr(emailHref))) {
+  die("subscribe regression: the service-down page lost the mailto fallback");
+}
+// Dash rule applied to the new copy specifically. The homepage as a whole is
+// exempt (legacy copy predates the rule), so guard the band on its own.
+for (const [label, fragment] of [
+  ["homepage band", subscribeHomeBand],
+  ["blog band", subscribeBlogBand],
+] as const) {
+  if (/[–—]/.test(fragment)) {
+    die(`dash guard: em/en dash in the ${label}; use a period, comma, colon, or plain word`);
+  }
+}
+
 const emitted: [string, string][] = [
   ["index.html", html],
   ["styles.css", css],
   ["robots.txt", robotsTxt],
   ["sitemap.xml", sitemapXml],
+  ["subscribed/index.html", versioned(subscribedHtml)],
+  ["subscribe-unavailable/index.html", versioned(subscribeUnavailableHtml)],
   ["blog/index.html", versioned(blogIndexHtml)],
   ["blog/feed.xml", feedXml],
   ...posts.map((p): [string, string] => [`blog/${p.slug}/index.html`, versioned(postPage(p))]),
@@ -938,8 +1164,11 @@ for (const [rel, content] of emitted) {
       die(`url-policy drift: ${path} missing from sitemap`);
     }
   }
-  // Dash rule: no em or en dashes in blog output (legacy homepage copy exempt).
-  if (rel.startsWith("blog/") && /[–—]/.test(content)) {
+  // Dash rule: no em or en dashes in blog output or in the subscribe pages
+  // (legacy homepage copy exempt).
+  const dashGuarded =
+    rel.startsWith("blog/") || rel.startsWith("subscribed/") || rel.startsWith("subscribe-unavailable/");
+  if (dashGuarded && /[–—]/.test(content)) {
     die(`dash guard: em/en dash found in ${rel}; use a period, comma, colon, or plain word`);
   }
   const abs = join(PUBLIC, rel);

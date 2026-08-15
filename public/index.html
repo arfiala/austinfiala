@@ -85,6 +85,27 @@
     <h2 class="section-title" id="about-h">About</h2>
     <p class="about">I&#39;m a cybersecurity consultant based in New Jersey. I&#39;ve spent my career doing risk assessment and security advisory work for financial firms — RIAs, broker-dealers, funds, and community financial institutions — and I care most about making structured, regulator-aware security programs achievable for firms without big-company budgets. Away from the keyboard I&#39;m usually swimming, biking, playing golf, or brewing beer.</p>
   </section>
+
+  <hr class="rule">
+
+  <section class="section" id="subscribe" aria-labelledby="subscribe-h">
+    <h2 class="section-title" id="subscribe-h">Get new notes by email</h2>
+    <p class="lede">One short email when a new note goes up. That is the whole list.</p>
+      <form class="sub-form" method="post" action="/subscribe">
+        <div class="sub-field">
+          <label class="sub-label" for="sub-email">Email address</label>
+          <input class="sub-input" id="sub-email" type="email" name="email"
+                 required maxlength="254" autocomplete="email" placeholder="you@yourfirm.com">
+        </div>
+        <div class="sub-hp" aria-hidden="true">
+          <label for="sub-website">Website</label>
+          <input id="sub-website" type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
+        <input type="hidden" name="source" value="/">
+        <button class="sub-button" type="submit">Subscribe</button>
+      </form>
+      <p class="sub-note">No spam, unsubscribe by replying. If the form fails, <a href="mailto:arfiala@gmail.com">email me</a> and I will add you by hand.</p>
+  </section>
 </main>
 
 <footer class="footer">

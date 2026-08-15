@@ -207,6 +207,53 @@ a{color:var(--link);}
 
 .about{margin:0;max-width:40em;}
 
+/* --- Subscribe band --- */
+.sub-form{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:flex-end;
+  gap:12px;
+  margin:0 0 12px;
+  max-width:34em;
+}
+.sub-field{display:flex;flex-direction:column;gap:6px;flex:1 1 240px;min-width:0;}
+.sub-label{
+  font-family:var(--font-head);
+  font-weight:500;
+  font-size:0.78rem;
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  color:var(--link);
+}
+.sub-input{
+  font-family:var(--font-body);
+  font-size:1rem;
+  color:var(--ink);
+  background:#fff;
+  border:1px solid rgba(11,61,46,0.3);
+  border-radius:6px;
+  padding:12px 14px;
+  min-width:0;
+}
+.sub-input:focus{outline:2px solid var(--emerald);outline-offset:1px;}
+.sub-button{
+  flex:none;
+  font-family:var(--font-head);
+  font-weight:500;
+  font-size:1rem;
+  color:var(--offwhite);
+  background:var(--evergreen);
+  border:1px solid var(--evergreen);
+  border-radius:6px;
+  padding:12px 28px;
+  cursor:pointer;
+}
+.sub-button:hover,.sub-button:focus{background:var(--emerald);border-color:var(--emerald);color:var(--evergreen);}
+/* Honeypot: kept in the accessibility tree's blind spot rather than removed,
+   so a form filling bot still finds something to fill. */
+.sub-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+.sub-note{margin:0;font-size:0.9rem;color:#4c574f;}
+
 /* --- Footer --- */
 .footer{
   background:var(--evergreen);
@@ -344,6 +391,9 @@ body.bp .footer{margin-top:56px;border-top:1px solid rgba(43,182,115,0.4);}
   border-radius:6px;padding:8px 18px;text-decoration:none;
 }
 .bp-bio-cta a:hover,.bp-bio-cta a:focus{background:var(--emerald);color:var(--evergreen);}
+.bp-sub .bp-noteno{background:var(--gold-ink);}
+.bp-sub .sub-label{color:var(--gold-ink);}
+.bp-sub .sub-note{margin-bottom:2px;}
 .bp-crumbs{margin:22px 0 0;font-family:ui-monospace,monospace;}
 .bp-crumbs a,.bp-feednote a{color:var(--emerald);}
 .bp-feednote{margin:22px 0 0;font-family:ui-monospace,monospace;font-size:0.85rem;}
@@ -353,4 +403,6 @@ body.bp .footer{margin-top:56px;border-top:1px solid rgba(43,182,115,0.4);}
   .bp-cell:last-child{margin-left:0;}
   .bp-print{padding:20px 18px 16px;}
   .bp-stamp{margin-left:0;}
+  .sub-form{flex-direction:column;align-items:stretch;}
+  .sub-button{width:100%;}
 }
