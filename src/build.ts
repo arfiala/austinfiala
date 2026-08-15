@@ -133,8 +133,11 @@ const SUBSCRIBE_NOTE = "No spam, unsubscribe by replying.";
 // submit just failed still has a way onto the list.
 const emailHref = site.links.find((l) => l.label === "Email")?.href;
 if (!emailHref) die("site.links has no Email entry; the subscribe fallback needs one");
-const SUBSCRIBE_FALLBACK =
-  `If the form fails, <a href="${escAttr(emailHref)}">email me</a> and I will add you by hand.`;
+// The link is shared; the lead-in is not. Next to a working form the fallback
+// is a conditional ("if this fails"), but on the service-down page the failure
+// already happened, so the same sentence reads as if nothing went wrong.
+const SUBSCRIBE_MAILTO = `<a href="${escAttr(emailHref)}">email me</a> and I will add you by hand`;
+const SUBSCRIBE_FALLBACK = `If the form fails, ${SUBSCRIBE_MAILTO}.`;
 
 function subscribeForm(idPrefix: string, source: string): string {
   return `<form class="sub-form" method="post" action="/subscribe">
@@ -631,7 +634,7 @@ const subscribeUnavailableHtml = noticePage({
   heading: "The signup form is down",
   lede:
     "Sorry. The part that stores your address is not answering right now, so nothing was saved. " +
-    SUBSCRIBE_FALLBACK,
+    `Please try again in a few minutes, or ${SUBSCRIBE_MAILTO}.`,
   path: "/subscribe-unavailable/",
 });
 
@@ -1127,13 +1130,13 @@ for (const [label, fragment] of [
   ["blog band", subscribeBlogBand],
   ["service-down page", subscribeUnavailableHtml],
 ] as const) {
-  if (!fragment.includes(SUBSCRIBE_FALLBACK)) {
+  if (!fragment.includes(SUBSCRIBE_MAILTO)) {
     die(`subscribe regression: ${label} lost the mailto fallback next to the form`);
   }
 }
 // And the fallback has to still be a way to reach a human. Rewording it into
 // an apology with no link would satisfy the check above and help nobody.
-if (!SUBSCRIBE_FALLBACK.includes("mailto:")) {
+if (!SUBSCRIBE_MAILTO.includes("mailto:")) {
   die("subscribe regression: the fallback copy no longer carries a mailto link");
 }
 // Dash rule applied to the new copy specifically. The homepage as a whole is
