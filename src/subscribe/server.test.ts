@@ -186,16 +186,36 @@ describe("POST /subscribe", () => {
     expect(row.created_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
 
-  test("a filled honeypot is dropped silently with 204 and stores nothing", async () => {
+  test("a filled honeypot stores nothing", async () => {
     const s = boot();
     const res = await fetch(url(s, "/subscribe"), form({ email: "bot@example.com", website: "http://spam.example" }));
-    expect(res.status).toBe(204);
-    expect(await res.text()).toBe("");
+    expect(res.status).toBe(303);
     expect(s.db.query("SELECT COUNT(*) AS n FROM subscribers").get()).toEqual({ n: 0 });
 
     const viaJson = await fetch(url(s, "/subscribe"), json({ email: "bot2@example.com", website: "x" }));
-    expect(viaJson.status).toBe(204);
+    expect(viaJson.status).toBe(200);
     expect(s.db.query("SELECT COUNT(*) AS n FROM subscribers").get()).toEqual({ n: 0 });
+  });
+
+  test("a dropped submission is indistinguishable from a stored one", async () => {
+    // If a drop looks different from a success, the honeypot is a one-probe
+    // puzzle: fill the field once, read the difference, skip the field forever.
+    const s = boot();
+    const real = await fetch(url(s, "/subscribe"), form({ email: "person@example.com", website: "" }));
+    const bot = await fetch(url(s, "/subscribe"), form({ email: "bot@example.com", website: "spam" }));
+
+    expect(bot.status).toBe(real.status);
+    expect(bot.headers.get("location")).toBe(real.headers.get("location"));
+    expect(bot.headers.get("x-subscribe-status")).toBe(real.headers.get("x-subscribe-status"));
+    expect(await bot.text()).toBe(await real.text());
+
+    const realJson = await fetch(url(s, "/subscribe"), json({ email: "person2@example.com" }));
+    const botJson = await fetch(url(s, "/subscribe"), json({ email: "bot2@example.com", website: "spam" }));
+    expect(botJson.status).toBe(realJson.status);
+    expect(await botJson.json()).toEqual(await realJson.json());
+
+    const rows = s.db.query("SELECT email FROM subscribers ORDER BY id").all() as { email: string }[];
+    expect(rows.map((r) => r.email)).toEqual(["person@example.com", "person2@example.com"]);
   });
 
   test("a duplicate is friendly, not an error, and never doubles a row", async () => {
@@ -256,6 +276,34 @@ describe("POST /subscribe", () => {
     const s = boot();
     expect((await fetch(url(s, "/subscribe"))).status).toBe(405);
     expect((await fetch(url(s, "/nope"))).status).toBe(404);
+  });
+});
+
+// --- Response hygiene -----------------------------------------------------
+
+describe("response hygiene", () => {
+  test("submitted input is never echoed back into a response body", async () => {
+    // The service answers from literal strings only. This asserts the property
+    // behaviourally, so the day someone adds a helpful "we could not save
+    // <address>" message, this test is what stops it shipping as an XSS.
+    const s = boot();
+    const payload = '<script>alert(1)</script>"onerror=x';
+    for (const res of [
+      await fetch(url(s, "/subscribe"), form({ email: payload })),
+      await fetch(url(s, "/subscribe"), form({ email: "ok@example.com", source: payload })),
+      await fetch(url(s, "/subscribe"), json({ email: payload })),
+    ]) {
+      const body = await res.text();
+      expect(body).not.toContain("<script");
+      expect(body).not.toContain("alert(1)");
+      expect(body).not.toContain("onerror");
+    }
+  });
+
+  test("responses that carry data are marked no-store", async () => {
+    const s = boot();
+    const res = await fetch(url(s, "/subscribe"), json({ email: "cache@example.com" }));
+    expect(res.headers.get("cache-control")).toBe("no-store");
   });
 });
 
@@ -382,6 +430,23 @@ describe("source hygiene", () => {
 
   test("no em or en dashes anywhere in the service source", () => {
     expect(/[–—]/.test(src)).toBe(false);
+  });
+
+  test("the service has no mail path at all (v1 stores, it never sends)", () => {
+    // austinfiala.com has no sending identity. Storing the list and mailing the
+    // list are two separate decisions and this service only makes the first, so
+    // there must be nothing here that could quietly grow into a mail path.
+    expect(/resend|nodemailer|sendgrid|mailgun|postmark|smtp|sendmail|createTransport/i.test(src)).toBe(false);
+  });
+
+  test("the service makes no outbound network call", () => {
+    // The only `fetch` in this file is Bun.serve's inbound handler. Anything
+    // else is egress, and egress is how a store-only service starts phoning
+    // somewhere with a list of addresses in hand.
+    const callers = src.split("\n").filter((l) => /fetch\s*\(/.test(l));
+    for (const line of callers) {
+      expect(line.trim()).toStartWith("async fetch(req");
+    }
   });
 
   test("no console output ever carries an email address", () => {

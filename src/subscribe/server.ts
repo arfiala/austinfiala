@@ -274,9 +274,15 @@ export function createSubscribeServer(opts: SubscribeServerOptions): SubscribeSe
     }
 
     // Honeypot: a real person never sees this field, so anything in it is a
-    // bot. Answer exactly as if the signup worked, and store nothing.
+    // bot. The answer is byte-identical to a successful signup, deliberately.
+    // A drop that looks different from a success is an oracle: probe once,
+    // learn which field is the trap, never fill it again. Nothing is stored,
+    // and only the server log knows the difference.
     if (honeypot.trim().length > 0) {
-      return new Response(null, { status: 204, headers: { "x-subscribe-status": "dropped" } });
+      console.log("subscribe: dropped (honeypot)");
+      return asJson
+        ? jsonResponse(200, { ok: true, status: "subscribed" }, "subscribed")
+        : redirectToThanks("subscribed");
     }
 
     if (!isValidEmail(email)) {
