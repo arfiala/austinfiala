@@ -1,0 +1,70 @@
+### STAGED, NOT INSTALLED. ###
+#
+# This file lives in the repo. It is not on the box, not in
+# /etc/systemd/system/, not enabled, and not running. Installing it is a
+# separate decision that belongs to Austin, and the steps are in
+# deploy/NOTES.md under "Subscribe service (staged, not deployed)".
+#
+# What it would run: src/subscribe/server.ts, the store-only subscribe
+# service. It binds loopback, stores addresses in SQLite, and sends no mail of
+# any kind. Caddy proxies exactly one public path to it.
+
+[Unit]
+Description=austinfiala.com subscribe service (store only, sends no mail)
+Documentation=https://github.com/arfiala/austinfiala
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/opt/austinfiala/service
+ExecStart=/usr/local/bin/bun src/subscribe/server.ts
+Restart=on-failure
+RestartSec=5
+
+# Port, database and proxy trust.
+#
+# SUBSCRIBE_TRUST_PROXY_IP=1 is only correct while the Caddy site block sets
+# `header_up X-Real-IP {remote_host}`. Without that line the client supplies
+# the header, mints a fresh rate-limit bucket per request, and the limiter
+# stops limiting while still looking present. The two settings ship together
+# or neither ships.
+Environment=SUBSCRIBE_PORT=4700
+Environment=SUBSCRIBERS_DB=/opt/austinfiala/data/subscribers.db
+Environment=SUBSCRIBE_TRUST_PROXY_IP=1
+
+# ADMIN_TOKEN for GET /export.csv lives here, mode 600, owned by ubuntu.
+# The file is optional on purpose: with no token the export route answers 503
+# and there is no way to turn it into an open export by forgetting something.
+EnvironmentFile=-/opt/austinfiala/subscribe.env
+
+# Sandbox. Same shape as the suretas stage 1 hardening on this box.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/opt/austinfiala/data
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+UMask=0077
+MemoryMax=128M
+
+# Loopback only, enforced by the kernel rather than by the bind address alone.
+# This service holds a list of email addresses and has no reason to reach the
+# internet, so it is not allowed to. It also means the "v1 sends no mail"
+# promise survives a future edit that forgets why.
+IPAddressAllow=localhost
+IPAddressDeny=any
+
+[Install]
+WantedBy=multi-user.target
